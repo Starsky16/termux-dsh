@@ -1,0 +1,15 @@
+NOTICE — upstream and third-party attributions
+===============================================
+
+termux-dsh patches and adapts the following MIT-licensed projects:
+
+- @deepseek-ai/dsh and its @deepseek-ai/dsh-* dependencies
+  (https://github.com/deepseek-ai/deepseek-harness, MIT)
+- The dsh-termux runtime tarball is downloaded at install time from
+  https://github.com/sunflower2333/dsh-android (upstream project; the tarball
+  is never redistributed in this repository).
+
+Patches in patches/core/ and patches/compat/ modify files of the above
+packages; each patch contains implementation changes only and does not alter
+upstream licensing. See PATCHES.md for per-patch rationale and applicable
+versions.

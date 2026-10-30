@@ -23,7 +23,7 @@ bash ~/code/termux-dsh/bootstrap.sh
 bootstrap.sh                 一条命令：环境 → 装 dsh → 补丁 → env → 接线 → verify
 verify.sh                    真机回归
 patches/{manifest.json,apply.sh,core/,compat/,local/}   补丁引擎（check/apply/revert）
-profile/{overrides.yml,plugins.sh}                      profile 覆盖与插件按序安装
+profile/{overrides.yml,apply-overrides.sh}              dsh 本体服务配置覆盖（幂等，不含插件）
 wiring/link-workspace.sh     两槽记忆/技能/hooks/bin/plans 接线
 toolchain/*.sh               flutter / glibc-shims / android-sdk-x86-shims / gradle-seed
 ```

@@ -32,9 +32,16 @@ toolchain/*.sh               flutter / glibc-shims / android-sdk-x86-shims / gra
 
 见 `PATCHES.md`（每条补丁：症状 → 根因 → 改法 → 适用版本）。
 
+## 范围
+
+**本仓只管 dsh 本体（含其官方依赖）在 Termux/Android 上跑得起来的问题。插件（第三方 npm 包）的适配、修复、隔离、安装一律不管。**
+
+- 归属本仓：`@deepseek-ai/dsh-*` 宿主服务包补丁、koffi / node-pty / esbuild / sharp 原生与平台件、session-persistence / HMR 等 dsh 自身 JS 补丁、profile 配置覆盖。
+- 不属本仓：L2 加载器隔离（归 [dsh-compat](https://github.com/Starsky16/dsh-compat)）、第三方插件文件修复、插件安装编排。
+
 ## 关联
 
-- [dsh-compat](https://github.com/Starsky16/dsh-compat)：插件兼容层（L3 垫片 + L4 门禁）；本仓承担 L1 平台补丁与 L2 加载器补丁。
+- [dsh-compat](https://github.com/Starsky16/dsh-compat)：插件兼容层（L2 隔离 + L3 垫片 + L4 门禁）。本仓不再承担 L2。
 - 分层说明见 workflow-sync 仓 `plans/2026-10-27-termux-dsh自建仓库.md` 与 `plans/2026-10-27-dsh插件兼容层.md`。
 
 ## License

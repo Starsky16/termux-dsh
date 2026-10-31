@@ -1,0 +1,14 @@
+--- a/src/koffi/CMakeLists.txt
++++ b/src/koffi/CMakeLists.txt
+@@ -148,6 +148,11 @@
+ if(UNIX AND NOT APPLE)
+     target_compile_options(koffi PRIVATE -fno-semantic-interposition -fvisibility=hidden -fdata-sections -ffunction-sections)
+     target_link_options(koffi PRIVATE -Wl,--gc-sections)
++    if(ANDROID)
++        # ANDROID/TERMUX PATCH: Node-API symbols are provided by the Node
++        # executable at dlopen time, not by the NDK sysroot.
++        target_link_options(koffi PRIVATE -Wl,--unresolved-symbols=ignore-all)
++    endif()
+ endif()
+ 
+ # ---- Optimization ----

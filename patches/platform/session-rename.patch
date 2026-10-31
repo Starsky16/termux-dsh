@@ -1,0 +1,24 @@
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -1,7 +1,7 @@
+ import z from "@deepseek-ai/schemastery";
+ import { SessionFormatUnsupportedMigrationError, createSessionFormatCatalogWithChildren, historicalSessionFormatCatalog, sessionFormatCatalog } from "@deepseek-ai/dsh-session-format-catalog";
+ import { readdirSync } from "node:fs";
+-import { link, lstat, mkdir, mkdtemp, open, readFile, readdir, realpath, rm, stat, truncate } from "node:fs/promises";
++import { link, lstat, mkdir, mkdtemp, open, readFile, readdir, realpath, rename, rm, stat, truncate } from "node:fs/promises";
+ import { basename, dirname, isAbsolute, join, parse, resolve, toNamespacedPath } from "node:path";
+ import { performance } from "node:perf_hooks";
+ import { scheduler } from "node:timers/promises";
+@@ -3223,7 +3223,11 @@
+ 		const tmp = await this.writeSyncedTempFile(finalPath, content);
+ 		let linked = false;
+ 		try {
+-			await link(tmp, finalPath);
++			/* ANDROID/TERMUX PATCH: SELinux (untrusted_app) denies link(2) inside
++			 * app data, so session materialization failed with EACCES. rename(2)
++			 * publishes atomically and keeps the no-replace precheck above. */
++			if (process.platform === "android") await rename(tmp, finalPath);
++			else await link(tmp, finalPath);
+ 			linked = true;
+ 		} finally {
+ 			/* v8 ignore next -- link failure is the TOCTOU/IO race guarded above; not reachable in test */

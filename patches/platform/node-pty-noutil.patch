@@ -1,0 +1,15 @@
+--- a/binding.gyp
++++ b/binding.gyp
+@@ -59,9 +59,9 @@
+           'sources': [
+             'src/unix/pty.cc',
+           ],
+-          'libraries': [
+-            '-lutil'
+-          ],
++          # ANDROID/TERMUX PATCH: Bionic provides the PTY entry points in libc;
++          # the NDK sysroot ships no libutil, so -lutil breaks the link.
++          'libraries': [],
+           'cflags': ['-Wall'],
+           'ldflags': [],
+           'conditions': [

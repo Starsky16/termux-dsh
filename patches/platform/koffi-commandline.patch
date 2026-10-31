@@ -1,0 +1,22 @@
+--- a/lib/native/base/base.cc
++++ b/lib/native/base/base.cc
+@@ -5417,6 +5417,19 @@
+                         FunctionRef<Span<const uint8_t>()> in_func,
+                         FunctionRef<void(Span<uint8_t> buf)> out_func, int *out_code)
+ {
++/* ANDROID/TERMUX PATCH: posix_spawn(3) only exists from API 28 on. Returning
++ * ENOSYS keeps older Termux installs loadable; koffi's FFI calls do not depend
++ * on this helper. */
++#if defined(__ANDROID__) && __ANDROID_API__ < 28
++    (void)cmd_line;
++    (void)info;
++    (void)in_func;
++    (void)out_func;
++    (void)out_code;
++    errno = ENOSYS;
++    LogError("ExecuteCommandLine is unavailable on Android API < 28");
++    return false;
++#endif
+     BlockAllocator temp_alloc;
+ 
+     // Create read pipes

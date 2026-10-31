@@ -34,7 +34,11 @@ dsh web
 pkg install -y nodejs-lts python git curl ripgrep patch
 
 # 2) 下载 Release 重组包（public 仓库，无需 token）
-BASE=https://github.com/Starsky16/termux-dsh/releases/latest/download
+# rc 是 pre-release，/releases/latest 不包含它；先取最新 tag。
+TAG="$(curl -fsSL 'https://api.github.com/repos/Starsky16/termux-dsh/releases?per_page=10' \
+  | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
+[ -n "$TAG" ] || { echo "无法解析最新 Release tag"; exit 1; }
+BASE="https://github.com/Starsky16/termux-dsh/releases/download/$TAG"
 curl -fL -o "$TMPDIR/dsh-termux.tgz" "$BASE/dsh-termux.tgz"
 curl -fL -o "$TMPDIR/dsh-termux.tgz.sha256" "$BASE/dsh-termux.tgz.sha256"
 ( cd "$TMPDIR" && sha256sum -c dsh-termux.tgz.sha256 )

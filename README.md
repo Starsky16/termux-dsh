@@ -20,17 +20,34 @@ bash ~/code/termux-dsh/bootstrap.sh
 ## 结构
 
 ```
-bootstrap.sh                 一条命令：环境 → 装 dsh → 补丁 → env → 接线 → verify
-verify.sh                    真机回归
-patches/{manifest.json,apply.sh,core/,compat/,local/}   补丁引擎（check/apply/revert）
-profile/{overrides.yml,apply-overrides.sh}              dsh 本体服务配置覆盖（幂等，不含插件）
+bootstrap.sh                 一条命令：环境 → 装本仓 Release → env → 覆盖 → 接线 → verify
+verify.sh                    真机回归（bash 可测项）
+lib/common.sh                日志/断言/hash/幂等下载
+patches/
+├─ manifest.json             每个 target：包名、包内路径、pristine/patched sha256
+├─ apply.sh                  --check/--apply/--revert，只打 profile 树
+├─ core/*.patch              A 类宿主补丁（7 target / 8 文件）
+└─ platform/*.patch          B 类移植层补丁（koffi/node-pty/session）
+repack/
+├─ repack.sh                 本地与 CI 共用：官方 npm 基座 → 原生 → 补丁 → pack → 校验
+├─ native/{koffi,node-pty}.sh
+├─ platforms.sh              esbuild/sharp 平台件
+└─ verify-package.sh         产物架构/必需文件/版本/补丁断言
+profile/{overrides.yml,apply-overrides.sh}   dsh 本体服务配置覆盖（幂等，不含插件）
 wiring/link-workspace.sh     两槽记忆/技能/hooks/bin/plans 接线
 toolchain/*.sh               flutter / glibc-shims / android-sdk-x86-shims / gradle-seed
+docs/verify-checklist.md     需在会话里跑的行为项
+.github/workflows/repack.yml 手动 dispatch 的重组构建
 ```
+
+安装与分步验证见 [`INSTALL.md`](INSTALL.md)，补丁原理与重生成见 [`PATCHES.md`](PATCHES.md)。
+
+> **M0 状态**：CI 重组包与首个 Release 尚未产出。发布前 `bootstrap.sh` 会在下载步骤
+> 明确失败；开发/验证期请按 `INSTALL.md` 的分步操作。首个 Release 发布后本节删除。
 
 ## 已知问题
 
-见 `PATCHES.md`（每条补丁：症状 → 根因 → 改法 → 适用版本）。
+见 [`PATCHES.md`](PATCHES.md)（每条补丁：症状 → 根因 → 改法 → 适用版本 → 重生成方法）。
 
 ## 范围
 

@@ -1,12 +1,13 @@
 --- a/lib/native/base/base.cc
 +++ b/lib/native/base/base.cc
-@@ -5417,6 +5417,19 @@
+@@ -5417,6 +5417,20 @@
                          FunctionRef<Span<const uint8_t>()> in_func,
                          FunctionRef<void(Span<uint8_t> buf)> out_func, int *out_code)
  {
-+/* ANDROID/TERMUX PATCH: posix_spawn(3) only exists from API 28 on. Returning
-+ * ENOSYS keeps older Termux installs loadable; koffi's FFI calls do not depend
-+ * on this helper. */
++/* ANDROID/TERMUX PATCH: posix_spawn(3) only exists from API 28 on. The whole
++ * body must be preprocessed out, not merely guarded by an early return: the
++ * compiler still type-checks unreachable code and the API 24 headers do not
++ * declare posix_spawn_file_actions_* at all. */
 +#if defined(__ANDROID__) && __ANDROID_API__ < 28
 +    (void)cmd_line;
 +    (void)info;
@@ -16,7 +17,15 @@
 +    errno = ENOSYS;
 +    LogError("ExecuteCommandLine is unavailable on Android API < 28");
 +    return false;
-+#endif
++#else
      BlockAllocator temp_alloc;
  
      // Create read pipes
+@@ -5623,6 +5637,7 @@
+         *out_code = -1;
+     }
+     return true;
++#endif
+ }
+ 
+ #endif

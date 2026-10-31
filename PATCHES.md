@@ -52,7 +52,7 @@ B 类补丁在 `repack/native/*.sh` 里对下载的源码副本执行，**不发
 | # | 目标 | 性质 | 内容 | 补丁/步骤 |
 |---|---|---|---|---|
 | B1 | `koffi/lib/native/base/base.cc` | 源码补丁 | `StatAt` 的 `#if defined(__linux__)` 加 `&& !defined(__ANDROID__)`，Android 走 fstatat 回退（Bionic API 24 无 statx wrapper） | `platform/koffi-statx.patch` |
-| B2 | 同上 | 源码补丁 | POSIX `ExecuteCommandLine` 开头：`__ANDROID__ && __ANDROID_API__ < 28` → `errno = ENOSYS; return false`（`posix_spawn` 自 API 28 起才有） | `platform/koffi-commandline.patch` |
+| B2 | 同上 | 源码补丁 | POSIX `ExecuteCommandLine` **整个函数体**用 `#if __ANDROID__ && __ANDROID_API__ < 28 → return false; #else ... #endif` 排除；不能只写 early return，编译器仍会检查不可达代码而报 `posix_spawn_*` 未声明 | `platform/koffi-commandline.patch` |
 | B3 | `koffi/src/koffi/CMakeLists.txt` | 源码补丁 | Android 分支追加 `-Wl,--unresolved-symbols=ignore-all`（Node-API 符号由 Node 运行时提供） | `platform/koffi-cmake.patch` |
 | B4 | `node-pty/binding.gyp` | 源码补丁 | Android 构建去掉 `-lutil`（Bionic 的 PTY API 在 libc，NDK sysroot 无 libutil） | `platform/node-pty-noutil.patch` |
 | B5 | `@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js` | 源码补丁 | import 加 `rename`；`materializePosix` 在 Android 用 `rename(tmp, finalPath)` 发布，其余 POSIX 保留 `link` no-replace；**漏了会话存不住** | `platform/session-rename.patch` |

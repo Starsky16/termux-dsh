@@ -153,6 +153,12 @@ docs/                        verify-checklist 与架构说明
 - [`CONTRIBUTING.md`](CONTRIBUTING.md)：开发、自检、发布约定
 - [`SECURITY.md`](SECURITY.md)：漏洞与敏感信息报告
 
+## AI 辅助声明
+
+本仓库的补丁、脚本、CI 配置与文档在 **DeepSeek Harness（AI 编程助手）** 辅助下完成；
+所有改动经过静态检查、CI repack 与 Termux 真机回归，验证范围见
+[`docs/verify-checklist.md`](docs/verify-checklist.md) 与 `CHANGELOG.md`。
+
 ## 安全
 
 本仓不读取、复制或提交任何密钥。请不要在 issue / 日志里粘贴 token、cookie、API key

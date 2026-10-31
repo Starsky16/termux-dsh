@@ -29,7 +29,7 @@ WANT="$(cut -d' ' -f1 "$SHA")"
 [[ "$(sha "$TGZ")" == "$WANT" ]] || die "tarball sha256 不符"
 
 info "[3/8] 全局安装（包内已含原生模块与 A/B 类补丁）"
-npm i -g "$TGZ"
+npm i -g --ignore-scripts "$TGZ"
 if have dsh; then
   dsh --version | grep -q -- '-tdsh\.' || warn "dsh 版本未含 -tdsh.：$(dsh --version 2>&1 || true)"
 else

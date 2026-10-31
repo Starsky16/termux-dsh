@@ -40,7 +40,7 @@ curl -fL -o "$TMPDIR/dsh-termux.tgz.sha256" "$BASE/dsh-termux.tgz.sha256"
 ( cd "$TMPDIR" && sha256sum -c dsh-termux.tgz.sha256 )
 
 # 3) 全局安装（包内已含原生模块与 A/B 类补丁）
-npm i -g "$TMPDIR/dsh-termux.tgz"
+npm i -g --ignore-scripts "$TMPDIR/dsh-termux.tgz"
 
 # 4) 环境变量（写入 ~/.zshenv 的 termux-dsh 标记块，幂等）
 bash ~/code/termux-dsh/profile/setup-env.sh

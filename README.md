@@ -47,6 +47,8 @@ docs/verify-checklist.md     需在会话里跑的行为项
 
 > **2026-10-31 Termux 真机实测通过**（vivo iPA2575 / Android 16 / aarch64）：`bootstrap.sh` 8 步无 die、`verify.sh` 12/12 PASS、`dsh web` 稳定、新建/重复新建/read_image/spill/会话持久化 5 项通过。
 
+> **分支**：`dev` 开发；`main` 自 2026-10-31 起为默认/发布分支（当前与 `dev` 同提交）。
+
 ## 已知问题
 
 见 [`PATCHES.md`](PATCHES.md)（每条补丁：症状 → 根因 → 改法 → 适用版本 → 重生成方法）。

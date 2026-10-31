@@ -20,6 +20,11 @@ if [[ -f "$TARGET" ]]; then
 fi
 touch "$TARGET"
 
+# A fresh profile ships a bare "[]" document. Appending a sequence after it
+# would create a second YAML document without a "---" separator, so drop the
+# empty-array line (comments and any existing entries stay).
+sed -i '/^[[:space:]]*\[\][[:space:]]*$/d' "$TARGET"
+
 changed=0
 
 # extract_block <first> <next|-> prints the YAML rows of one block without the

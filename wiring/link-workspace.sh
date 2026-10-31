@@ -39,12 +39,17 @@ lnk() {
 backup_if_regular() {
   local path="$1"
   [[ -e "$path" && ! -L "$path" ]] || return 0
+  local bak="$path.bak-$(date +%s)"
   if [[ "$DRY" == "1" ]]; then
-    warn "would back up $path → $path.bak-$(date +%s)"
-  else
-    cp -p "$path" "$path.bak-$(date +%s)"
-    warn "已备份普通文件：$path"
+    warn "would back up $path → $bak"
+    return 0
   fi
+  if [[ -d "$path" ]]; then
+    mv "$path" "$bak"
+  else
+    cp -p "$path" "$bak"
+  fi
+  warn "已备份：$path → $bak"
 }
 
 mkdir_maybe() {
@@ -83,6 +88,7 @@ skill_count=0
 for src in "$WS"/skills/project/* "$WS"/skills/market/*; do
   [[ -e "$src" ]] || continue
   name="$(basename "$src")"
+  backup_if_regular "$DSH/skills/$name"
   lnk "$src" "$DSH/skills/$name"
   skill_count=$((skill_count + 1))
 done
@@ -130,6 +136,7 @@ done
 
 # 4) plans
 mkdir_maybe "$CODE/dev"
+backup_if_regular "$CODE/dev/plans"
 lnk "$WS/plans" "$CODE/dev/plans"
 
 echo

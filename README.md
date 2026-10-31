@@ -41,7 +41,7 @@ docs/verify-checklist.md     需在会话里跑的行为项
 
 安装与分步验证见 [`INSTALL.md`](INSTALL.md)，补丁原理与重生成见 [`PATCHES.md`](PATCHES.md)。
 
-> **最新 Release**：`v0.2.1-rc.5-tdsh.2`（pre-release，含 B11 require-builtin 修复）。
+> **最新 Release**：`v0.2.1-rc.5-tdsh.3`（pre-release，含 B11 require-builtin + 静态 libc++ 修复）。
 > 资产 `dsh-termux.tgz` + `.sha256`；`bootstrap.sh` 会通过 GitHub API 解析最新 tag
 > （`/releases/latest` 不含 pre-release），也可用 `TDSH_RELEASE_BASE` 指定 tag URL。
 

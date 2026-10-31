@@ -60,6 +60,7 @@ B 类补丁在 `repack/native/*.sh` 里对下载的源码副本执行，**不发
 | B7 | koffi 原生构建 | 构建步骤 | NDK toolchain + `cnoke.cjs -t android_arm64 --release`，API 24 / arm64-v8a；libc++ 静态链接（与 koffi 官方 Android 预编译一致，避免运行时 `libc++_shared.so` 依赖） | `repack/native/koffi.sh` |
 | B8 | node-pty 原生构建 | 构建步骤 | Node headers + `node-gyp rebuild --arch=arm64 --nodedir=...`，CC/CXX/AR/LD/RANLIB 指向 NDK；产物入 `prebuilds/android-arm64/pty.node` | `repack/native/node-pty.sh` |
 | B9 | esbuild / sharp | 平台件 | 显式装 `@esbuild/android-arm64@<ver>`；sharp 走 `@img/sharp-wasm32@<ver>` + `@emnapi/runtime`（native 平台包无 Android 条目） | `repack/platforms.sh` |
+| B10 | `@deepseek-ai/dsh/lib/bin.js` | 源码补丁 | `dsh --version` 原本读 `dsh-app-boot/package.json`（上游版本）；重打包后改读根 `dsh-termux/package.json` 的 `version`，只影响显示，插件兼容性仍用上游 runtime version | `platform/tdsh-version.patch` |
 
 > **B5 为什么不能漏**：官方 npm 包没有向日葵构建期那层 `rename` 兜底。Android 上
 > `link(2)` 被 SELinux 拒绝，首次会话创建就会失败。

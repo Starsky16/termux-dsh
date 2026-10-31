@@ -110,6 +110,14 @@ SESSION="$BUILD/node_modules/@deepseek-ai/dsh-session-persistence-jsonl"
 grep -q 'rename(tmp, finalPath)' "$SESSION/lib/index.js" || die "B5 未生效"
 info "  B5 session rename OK"
 
+DSHMETA="$BUILD/node_modules/@deepseek-ai/dsh"
+[[ -d "$DSHMETA" ]] || die "缺 @deepseek-ai/dsh"
+( cd "$DSHMETA" && patch -p1 --forward --batch --dry-run < "$ROOT/patches/platform/tdsh-version.patch" ) \
+  || die "B10 锚点不匹配"
+( cd "$DSHMETA" && patch -p1 --forward --batch < "$ROOT/patches/platform/tdsh-version.patch" )
+grep -q 'manifest.name === "dsh-termux"' "$DSHMETA/lib/bin.js" || die "B10 未生效"
+info "  B10 CLI version OK"
+
 # 3) Platform-specific optional packages.
 info "[3/6] 平台件"
 BUILD="$BUILD" WORK="$WORK" bash "$HERE/platforms.sh"

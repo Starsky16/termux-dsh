@@ -1,0 +1,25 @@
+--- a/lib/bin.js
++++ b/lib/bin.js
+@@ -3,6 +3,7 @@
+ import { resolveDshHome } from "@deepseek-ai/dsh-home-paths";
+ import { Command, CommanderError, InvalidArgumentError } from "commander";
+ import { randomUUID } from "node:crypto";
++import { readFileSync } from "node:fs";
+ import { mkdir, writeFile } from "node:fs/promises";
+ import { join } from "node:path";
+ import { inspect } from "node:util";
+@@ -205,7 +206,13 @@
+ * @returns a promise that settles when the selected command mode finishes.
+ */
+ async function runCli(options = {}) {
+-	const version = getDshRuntimeVersion();
++	const version = (() => {
++		try {
++			const manifest = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
++			if (manifest.name === "dsh-termux" && manifest.tdsh?.upstream && typeof manifest.version === "string") return manifest.version;
++		} catch {}
++		return getDshRuntimeVersion();
++	})();
+ 	const { manageDesktopProfile, ...profileOptions } = options;
+ 	const invocation = parseDshArgs(process.argv.slice(2), version, manageDesktopProfile);
+ 	switch (invocation.mode) {

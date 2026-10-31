@@ -67,6 +67,10 @@ check_file "$PKG/node_modules/@deepseek-ai/node-addon-system/lib/softlock.js" "A
 check_grep "$PKG/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js" 'process.platform === "android"' "B5 session android publish"
 check_grep "$PKG/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js" 'rename(tmp, finalPath)' "B5 rename call"
 
+# B10: `dsh --version` must report the repack version, not the upstream
+# dsh-app-boot version. The unpacked package root is dsh-termux.
+check_grep "$PKG/lib/bin.js" 'manifest.name === "dsh-termux"' "B10 CLI version"
+
 # No host binaries may ride along (they would make the tarball look valid while
 # failing at runtime on the phone).
 if find "$PKG/node_modules" -path '*koffi/build/koffi/linux_*' -o -path '*node-pty/prebuilds/linux-*' -o -path '*@esbuild/linux-*' | grep -q .; then

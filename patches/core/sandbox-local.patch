@@ -1,0 +1,94 @@
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -250,16 +250,29 @@
+ * else.
+ */
+ var LocalSandboxProvider = class extends SandboxProvider {
++	/**
++	* TERMUX PATCH (`allowUnconfinedFallback`): Android/Termux hosts have no
++	* usable rung — no `bwrap`, and Android kernels ship without Landlock
++	* (`landlock_create_ruleset` returns ENOSYS) — so the upstream fail-closed
++	* chain made EVERY exec tool unusable. Off by default (upstream semantics
++	* unchanged); a deployment build opts in explicitly and gets best-effort
++	* execution plus one loud warning. Filesystem tools stay fenced by
++	* `@deepseek-ai/dsh-fs-sandbox` regardless; only kernel confinement of
++	* spawned processes is missing, hence the `partial` enforcement claim.
++	*/
+ 	static Config = z.object({
+ 		runnerCommand: z.array(z.string()).default([]),
+ 		runnerFailureSignatures: z.array(z.string()).default([]),
+-		probeTimeoutMs: z.natural().default(5e3)
++		probeTimeoutMs: z.natural().default(5e3),
++		allowUnconfinedFallback: z.boolean().default(false)
+ 	});
+ 	/** Test hook (mirrors the bash executors' `internals`). */
+ 	internals = {};
+ 	runnerCommand;
+ 	configuredRunnerFailureSignatures;
+ 	probeTimeoutMs;
++	/** TERMUX PATCH: whether an unavailable chain degrades to unconfined execution. */
++	allowUnconfinedFallback;
+ 	/** Cached chain verdict; undefined until the first confined wrap needs it. */
+ 	selectedRunner;
+ 	/**
+@@ -281,6 +294,7 @@
+ 		this.runnerCommand = runner.length > 0 ? runner : void 0;
+ 		this.configuredRunnerFailureSignatures = runnerFailureSignatures;
+ 		this.probeTimeoutMs = config.probeTimeoutMs;
++		this.allowUnconfinedFallback = config.allowUnconfinedFallback;
+ 		assertPositiveFinite("probeTimeoutMs", this.probeTimeoutMs);
+ 		/* v8 ignore next 3 -- Windows-only registration; the Linux coverage lane cannot take this branch */
+ 		if (process.platform === "win32" && this.runnerCommand === void 0) ctx.inject(["skills"], (skillsCtx) => {
+@@ -320,6 +334,14 @@
+ 			runnerFailureRules: [{ fatalSignatures: this.configuredRunnerFailureSignatures }]
+ 		});
+ 		const selected = this.selectRunner(policy.mode);
++		// TERMUX PATCH: the degraded rung runs the caller's own argv — there is
++		// no kernel confinement to apply, and no runner dialect to translate.
++		if (selected.runner === "unconfined") return Promise.resolve({
++			argv,
++			enforcement: "partial",
++			denialSignatures: [],
++			runnerFailureRules: []
++		});
+ 		const runnerArgv = this.runnerArgv(selected.runner, policy);
+ 		return Promise.resolve({
+ 			argv: [
+@@ -492,11 +514,27 @@
+ 		if (this.selectedRunner === "unavailable") throw new SandboxUnavailableError(mode);
+ 		return this.selectedRunner;
+ 	}
++	/**
++	* TERMUX PATCH: the opted-in degraded rung — no kernel confinement exists, so
++	* the caller's argv runs as-is and the claim is `partial` (the in-process
++	* filesystem fence still governs the fs tools).
++	*/
++	unconfinedFallback() {
++		this.ctx.logger.warn(`sandbox-local: no usable confinement backend on ${process.platform}-${process.arch}; running unconfined — filesystem tools stay fenced, spawned processes are NOT`);
++		return {
++			runner: "unconfined",
++			enforcement: "partial"
++		};
++	}
+ 	/** Walk this platform's chain: sole candidate unprobed, several probed in order, none usable → unavailable. */
+ 	chainVerdict() {
+ 		const chain = this.internals.chain ?? PLATFORM_CHAINS[this.internals.platform ?? process.platform] ?? [];
+ 		const [first, ...rest] = chain;
+-		if (first === void 0) return "unavailable";
++		if (first === void 0) {
++			// TERMUX PATCH: this platform has no chain at all (android has none of bwrap/landlock/seatbelt/windows-acl).
++			if (this.allowUnconfinedFallback) return this.unconfinedFallback();
++			return "unavailable";
++		}
+ 		if (rest.length === 0) return {
+ 			runner: first,
+ 			enforcement: STATIC_ENFORCEMENT[first]
+@@ -508,6 +546,8 @@
+ 				enforcement
+ 			};
+ 		}
++		// TERMUX PATCH: an opted-in deployment degrades instead of failing closed.
++		if (this.allowUnconfinedFallback) return this.unconfinedFallback();
+ 		return "unavailable";
+ 	}
+ 	/** One rung's functional probe (each at most once, via the chain walk). */

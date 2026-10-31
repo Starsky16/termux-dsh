@@ -1,0 +1,43 @@
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -6,9 +6,24 @@
+ import z from "@deepseek-ai/schemastery";
+ import { FileSystem, FsError, FsTargetKey, FsVersion } from "@deepseek-ai/dsh-fs";
+ import { randomUUID } from "node:crypto";
+-import { createReadStream, realpath } from "node:fs";
+-import { chmod, link, lstat, mkdir, open, readFile, readdir, rename, rm, stat } from "node:fs/promises";
++import { constants as fsConstants, createReadStream, realpath } from "node:fs";
++import { chmod, copyFile, link, lstat, mkdir, open, readFile, readdir, rename, rm, stat } from "node:fs/promises";
+ import { TextDecoder, promisify } from "node:util";
++
++/* Termux/Android: SELinux (untrusted_app) denies hard links inside app data,
++ * so link() returns EACCES/EPERM. Publishing must fall back to an exclusive
++ * copy, which keeps the same no-replace guarantee. */
++const HARD_LINK_UNAVAILABLE = /* @__PURE__ */ new Set([
++	"EACCES",
++	"EPERM",
++	"ENOTSUP",
++	"EOPNOTSUPP",
++	"ENOSYS"
++]);
++function isHardLinkUnavailable(error) {
++	return error instanceof Error && "code" in error && HARD_LINK_UNAVAILABLE.has(error.code);
++}
++
+ //#region lib/types/win32.js
+ /**
+ * Windows security-descriptor helpers for atomic local-file replacement. Koffi loads lazily so
+@@ -548,7 +563,12 @@
+ 		handle = void 0;
+ 		throwIfAborted(signal, "write");
+ 		if (createIfAbsent !== void 0) try {
+-			await linkFile(tempPath, absolutePath);
++			try {
++				await linkFile(tempPath, absolutePath);
++			} catch (linkError) {
++				if (!isHardLinkUnavailable(linkError)) throw linkError;
++				await copyFile(tempPath, absolutePath, fsConstants.COPYFILE_EXCL);
++			}
+ 		} catch (error) {
+ 			await throwGuardedCreateFailure(error, absolutePath, createIfAbsent.displayPath, inspectPublicationTarget);
+ 		}

@@ -1,0 +1,61 @@
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -39,11 +39,29 @@
+ 	} catch {
+ 		return false;
+ 	}
+-	if (parsed instanceof ipaddr.IPv4) return parsed.range() === "unicast";
+-	if (parsed.isIPv4MappedAddress()) return parsed.toIPv4Address().range() === "unicast";
++	if (parsed instanceof ipaddr.IPv4) return parsed.range() === "unicast" || isAllowedBenchmark(parsed);
++	if (parsed.isIPv4MappedAddress()) {
++		const v4 = parsed.toIPv4Address();
++		return v4.range() === "unicast" || isAllowedBenchmark(v4);
++	}
+ 	return parsed.range() === "unicast";
+ }
+ /**
++* TERMUX PATCH: whether the benchmarking block (198.18.0.0/15) is admitted.
++* Assigned once from config while the provider registers; requests only read it.
++*/
++let allowBenchmarkAddresses = false;
++/**
++* Whether one parsed IPv4 destination sits in the admitted benchmarking block.
++* Matched on octets because ipaddr.js classifies 198.18.0.0/15 as "reserved",
++* not "benchmarking", and "reserved" also spans other blocks we must keep out.
++*/
++function isAllowedBenchmark(v4) {
++	if (!allowBenchmarkAddresses) return false;
++	const octets = v4.octets;
++	return octets[0] === 198 && (octets[1] === 18 || octets[1] === 19);
++}
++/**
+ * Resolve a hostname once and reject the complete answer set if any destination
+ * is not public. The returned addresses are the only ones the transport may use.
+ *
+@@ -646,7 +664,17 @@
+ 	maxBodyChars: z.number().default(1e5),
+ 	timeoutMs: z.number().default(3e4),
+ 	maxRedirects: z.number().default(5),
+-	userAgent: z.string().default(DEFAULT_USER_AGENT)
++	userAgent: z.string().default(DEFAULT_USER_AGENT),
++	/**
++	* TERMUX PATCH: some deployments resolve every hostname through a
++	* transparent proxy that answers inside the benchmarking range
++	* (198.18.0.0/15) — this phone's network does exactly that, so the SSRF
++	* guard rejected EVERY URL with "resolves to a non-public IP address" and
++	* web_fetch was unusable. Off by default (upstream behaviour unchanged);
++	* enabling it admits only that reserved benchmarking block, never
++	* loopback/private/link-local space.
++	*/
++	allowBenchmarkAddresses: z.boolean().default(false)
+ });
+ /** A resource limit (byte/char/length/timeout cap) must be a positive finite number. */
+ function assertPositiveFinite(name, value) {
+@@ -668,6 +696,7 @@
+ 	assertPositiveFinite("maxBodyChars", resolved.maxBodyChars);
+ 	assertTimeoutMs(resolved.timeoutMs);
+ 	assertNonNegativeInteger("maxRedirects", resolved.maxRedirects);
++	allowBenchmarkAddresses = resolved.allowBenchmarkAddresses;
+ 	const limits = {
+ 		maxResponseBytes: resolved.maxResponseBytes,
+ 		maxBodyChars: resolved.maxBodyChars,

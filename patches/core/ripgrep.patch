@@ -1,0 +1,54 @@
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -1,4 +1,13 @@
++/**
++ * ANDROID/TERMUX PATCH: the prebuilt platform packages cover darwin, win32 and
++ * (glibc/musl) linux only, so `process.platform === 'android'` can never
++ * resolve one and every grep/glob call failed with "ripgrep launch failed".
++ * Termux ships a native ripgrep (`pkg install ripgrep`); prefer the packaged
++ * binary when it exists, otherwise fall back to `rg` on PATH.
++ */
+ import { createRequire } from 'node:module';
++import { accessSync, constants } from 'node:fs';
++import { delimiter, join } from 'node:path';
+ 
+ const require = createRequire(import.meta.url);
+ 
+@@ -6,14 +15,33 @@
+ const binaryName = process.platform === 'win32' ? 'rg.exe' : 'rg';
+ const platformPkg = `@vscode/ripgrep-${process.platform}-${arch}`;
+ 
++/** First executable `rg` on PATH, or undefined when the system has none. */
++function systemRipgrep() {
++    for (const dir of (process.env.PATH ?? '').split(delimiter)) {
++        if (dir === '') continue;
++        const candidate = join(dir, binaryName);
++        try {
++            accessSync(candidate, constants.X_OK);
++            return candidate;
++        } catch {
++            // not this directory
++        }
++    }
++    return undefined;
++}
++
+ let resolved;
+ try {
+     resolved = require.resolve(`${platformPkg}/bin/${binaryName}`);
+ } catch {
+-    throw new Error(
+-        `Could not find ${platformPkg}. ` +
+-        `Ensure optionalDependencies are installed for this platform (${process.platform}-${arch}).`
+-    );
++    resolved = systemRipgrep();
++    if (resolved === undefined) {
++        throw new Error(
++            `Could not find ${platformPkg}. ` +
++            `Ensure optionalDependencies are installed for this platform (${process.platform}-${arch}), ` +
++            `or install a system ripgrep on PATH (Termux: pkg install ripgrep).`
++        );
++    }
+ }
+ 
+ export const rgPath = resolved;

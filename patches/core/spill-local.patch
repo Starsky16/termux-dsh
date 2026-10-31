@@ -1,0 +1,45 @@
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -2,9 +2,10 @@
+ import { tmpdir } from "node:os";
+ import z from "@deepseek-ai/schemastery";
+ import { SpillLocator, SpillStore } from "@deepseek-ai/dsh-spill";
+-import { lstat, mkdir, open, readdir, realpath, rmdir, unlink } from "node:fs/promises";
++import { lstat, mkdir, open, readdir, realpath, rmdir, unlink, access } from "node:fs/promises";
+ import { createHash, randomBytes } from "node:crypto";
+ import { mkdtempSync } from "node:fs";
++import { constants as fsConstants } from "node:fs";
+ //#region lib/types/store.js
+ /**
+ * Cordis-free storage mechanics for the local spill backend: private
+@@ -167,6 +168,30 @@
+ 		if (!stats.isDirectory()) return false;
+ 		const writableByOthers = (stats.mode & 18) !== 0;
+ 		const sticky = (stats.mode & 512) !== 0;
++		/*
++		* TERMUX PATCH: Android app-private storage cannot satisfy the generic POSIX
++		* rule — `/data/data` is `system:system 0771` and `/data/data/com.termux/files`
++		* is `<app>:<app> 0771`, so every spill root was skipped ("expected a
++		* current-user-owned directory with protected write and ancestor
++		* permissions") and large tool output could never be spilled. Android
++		* isolates app data with SELinux (another app cannot traverse or replace
++		* entries here at all), so an ancestor is unsafe only when this process can
++		* actually write into it AND it is neither sticky nor ours.
++		*/
++		if (process.platform === "android") {
++			if (writableByOthers && !sticky && stats.uid !== currentUid) {
++				let writableByMe = true;
++				try {
++					await access(parent, fsConstants.W_OK);
++				} catch {
++					writableByMe = false;
++				}
++				if (writableByMe) return false;
++			}
++			child = parent;
++			childStats = stats;
++			continue;
++		}
+ 		if (writableByOthers && !sticky) return false;
+ 		/* v8 ignore next -- requires an ancestor owned by another OS account inside
+ 		a writable sticky parent; ordinary test fixtures cannot change uid. */

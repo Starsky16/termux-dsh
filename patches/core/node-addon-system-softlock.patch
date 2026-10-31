@@ -1,0 +1,111 @@
+--- /dev/null
++++ b/lib/softlock.js
+@@ -0,0 +1,108 @@
++/**
++ * Pure-JS advisory lock fallback for hosts without a prebuilt
++ * @deepseek-ai/node-addon-system-<platform>-<arch> binary (Termux/Android
++ * bionic one). Same idea as python filelock's SoftFileLock: atomic O_EXCL
++ * sidecar file + pid liveness probe, no flock(2) syscall.
++ * Contract mirrors tryLockExclusive(fd): resolve on success, reject with
++ * code EAGAIN when another live holder owns the lock.
++ */
++import { open, readFile, unlink } from "node:fs/promises";
++import { readlinkSync, unlinkSync } from "node:fs";
++
++const SUFFIX = ".softlock";
++const held = new Set();
++
++function targetOf(fd) {
++  try {
++    const p = readlinkSync("/proc/self/fd/" + fd);
++    if (p && !p.startsWith("/proc/self/fd/") && !p.endsWith(" (deleted)")) return p;
++  } catch {}
++  return null;
++}
++
++function alive(pid) {
++  if (!Number.isInteger(pid) || pid <= 0) return false;
++  try {
++    process.kill(pid, 0);
++    return true;
++  } catch (error) {
++    return error && error.code === "EPERM";
++  }
++}
++
++function contention(path) {
++  return Object.assign(new Error("EAGAIN: flock failed (" + path + ")"), {
++    code: "EAGAIN",
++    errno: -11,
++    syscall: "flock",
++  });
++}
++
++let cleanupReady = false;
++function installCleanup() {
++  if (cleanupReady) return;
++  cleanupReady = true;
++  const drop = () => {
++    for (const p of held) {
++      try {
++        unlinkSync(p);
++      } catch {}
++    }
++    held.clear();
++  };
++  process.on("exit", drop);
++  for (const [signal, code] of [["SIGINT", 130], ["SIGTERM", 143], ["SIGHUP", 129]]) {
++    process.on(signal, () => {
++      drop();
++      process.exit(code);
++    });
++  }
++}
++
++export async function softTryLockExclusive(fd) {
++  const target = targetOf(fd);
++  const lockPath = target
++    ? target + SUFFIX
++    : "/tmp/.dsh-softlock-" + process.pid + "-" + fd;
++  installCleanup();
++  if (held.has(lockPath)) throw contention(lockPath);
++  for (let attempt = 0; attempt < 3; attempt += 1) {
++    let handle;
++    try {
++      handle = await open(lockPath, "wx", 0o600);
++    } catch (error) {
++      if (!error || error.code !== "EEXIST") throw error;
++      let owner;
++      try {
++        owner = JSON.parse(await readFile(lockPath, "utf8"));
++      } catch {
++        owner = undefined;
++      }
++      if (owner && alive(owner.pid)) throw contention(lockPath);
++      try {
++        await unlink(lockPath);
++      } catch (unlinkError) {
++        if (!unlinkError || unlinkError.code !== "ENOENT") throw contention(lockPath);
++      }
++      continue;
++    }
++    try {
++      await handle.writeFile(JSON.stringify({ pid: process.pid, at: Date.now() }));
++    } finally {
++      await handle.close();
++    }
++    held.add(lockPath);
++    return;
++  }
++  throw contention(lockPath);
++}
++
++export function releaseSoftLock(fd) {
++  const target = targetOf(fd);
++  const lockPath = target ? target + SUFFIX : "/tmp/.dsh-softlock-" + process.pid + "-" + fd;
++  if (!held.delete(lockPath)) return false;
++  try {
++    unlinkSync(lockPath);
++  } catch {}
++  return true;
++}

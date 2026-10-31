@@ -1,0 +1,79 @@
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -4,8 +4,23 @@
+ import { dshCachePath, resolveDshHome } from "@deepseek-ai/dsh-home-paths";
+ import { createHash, randomUUID } from "node:crypto";
+ import { constants, createReadStream } from "node:fs";
+-import { chmod, link, mkdir, open, readFile, rename, rm, unlink, writeFile } from "node:fs/promises";
++import { chmod, copyFile, link, mkdir, open, readFile, rename, rm, unlink, writeFile } from "node:fs/promises";
+ import { createLazyRequire } from "@deepseek-ai/dsh-lazy-require";
++
++/* Termux/Android: SELinux (untrusted_app) denies hard links inside app data,
++ * so link() returns EACCES/EPERM. Publishing must fall back to an exclusive
++ * copy, which keeps the same no-replace guarantee. */
++const HARD_LINK_UNAVAILABLE = /* @__PURE__ */ new Set([
++	"EACCES",
++	"EPERM",
++	"ENOTSUP",
++	"EOPNOTSUPP",
++	"ENOSYS"
++]);
++function isHardLinkUnavailable(error) {
++	return error instanceof Error && "code" in error && HARD_LINK_UNAVAILABLE.has(error.code);
++}
++
+ //#region lib/types/compression-limiter.js
+ /** Instance-owned concurrency bound for native image transformations. */
+ /**
+@@ -358,7 +373,22 @@
+ 	/* v8 ignore next -- Windows cannot open directory handles; NTFS metadata journaling owns entry durability there. */
+ 	if (process.platform === "win32") return;
+ 	/* v8 ignore start -- Windows cannot exercise directory fsync; POSIX behavior tests enforce this peer. */
+-	const handle = await open(path, constants.O_RDONLY);
++	/*
++	* TERMUX PATCH: `/data/data` is `system:system 0771`, so the app uid may
++	* traverse it but not open it for reading — `open(…, O_RDONLY)` fails with
++	* EACCES and the durability walk from DSH_HOME up to `/` broke every
++	* attachment write (read_image, uploads) with
++	* "EACCES: permission denied, open '/data/data'". Entry durability is
++	* best-effort here: the file itself is still fsynced before publication,
++	* and the walk stays a no-op only for ancestors this process cannot read.
++	*/
++	let handle;
++	try {
++		handle = await open(path, constants.O_RDONLY);
++	} catch (error) {
++		if (process.platform === "android" && (error.code === "EACCES" || error.code === "EPERM")) return;
++		throw error;
++	}
+ 	try {
+ 		await handle.sync();
+ 	} finally {
+@@ -477,7 +507,12 @@
+ 	try {
+ 		await ensureDurableDirectory(parent, await ensureDurableHome(dirname(dirname(resolve(root)))));
+ 		try {
+-			await link(source, target);
++			try {
++				await link(source, target);
++			} catch (linkError) {
++				if (!isHardLinkUnavailable(linkError)) throw linkError;
++				await copyFile(source, target, constants.COPYFILE_EXCL);
++			}
+ 		} catch (error) {
+ 			/* v8 ignore next -- Private same-filesystem directories make EEXIST the only recoverable link race. */
+ 			if (!(error instanceof Error && "code" in error && error.code === "EEXIST")) throw error;
+@@ -538,7 +573,12 @@
+ 	try {
+ 		await ensureDurableDirectory(parent, staged.boundary);
+ 		try {
+-			await link(staged.path, target);
++			try {
++				await link(staged.path, target);
++			} catch (linkError) {
++				if (!isHardLinkUnavailable(linkError)) throw linkError;
++				await copyFile(staged.path, target, constants.COPYFILE_EXCL);
++			}
+ 		} catch (error) {
+ 			/* v8 ignore next -- Private same-filesystem directories make EEXIST the only recoverable link race. */
+ 			if (!(error instanceof Error && "code" in error && error.code === "EEXIST")) throw error;

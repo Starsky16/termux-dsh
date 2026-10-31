@@ -1,0 +1,78 @@
+{
+  "base": {
+    "upstream": "0.2.1-rc.5",
+    "verified_against": [
+      "0.2.1-rc.2",
+      "0.2.1-rc.5"
+    ],
+    "note": "CI 跟随 @deepseek-ai/dsh@latest；A 类目标文件在 rc.2..rc.5 字节一致。pristine/patched 哈希或补丁锚点任一不匹配即视为漂移，CI 不发布。",
+    "generated": "2026-10-31"
+  },
+  "targets": [
+    {
+      "section": "core",
+      "patch": "core/node-addon-system-softlock.patch",
+      "pkg": "@deepseek-ai/node-addon-system",
+      "rel": "lib/softlock.js",
+      "pristine_sha256": null,
+      "patched_sha256": "18d47674bac67083bb19244933ec2b16110e3d7ac924201f8c5bb60048e42724",
+      "create": true
+    },
+    {
+      "section": "core",
+      "patch": "core/node-addon-system-flock.patch",
+      "pkg": "@deepseek-ai/node-addon-system",
+      "rel": "lib/flock.js",
+      "pristine_sha256": "e42af00c298d56322c073bf7cc66485096028318ab645a2e69dc2aa7481ba646",
+      "patched_sha256": "1fac7d372a397382964a43e70e39b43a175555c8ac970d8003b9c39cfa48a7bd"
+    },
+    {
+      "section": "core",
+      "patch": "core/ripgrep.patch",
+      "pkg": "@vscode/ripgrep",
+      "rel": "lib/index.js",
+      "pristine_sha256": "107cf2aa0eaf6e9fb1a23cfe74cdbd322b1628af1812d05d9d46b650c4cc4c5d",
+      "patched_sha256": "a226dd2267cba9fa4f758f6aef6240513e7814bd98eb09c90f24bfff9423fe0a"
+    },
+    {
+      "section": "core",
+      "patch": "core/fs-local.patch",
+      "pkg": "@deepseek-ai/dsh-fs-local",
+      "rel": "lib/index.js",
+      "pristine_sha256": "63fbb41d2c33e07111884b798be507e68c2752acab8249c821c20ade436e894f",
+      "patched_sha256": "e9598dd4cec35c200a68490019bd014a6c85b050bcecb1edfb6b4e3f903672f0"
+    },
+    {
+      "section": "core",
+      "patch": "core/attachment-local.patch",
+      "pkg": "@deepseek-ai/dsh-attachment-local",
+      "rel": "lib/index.js",
+      "pristine_sha256": "cd39685581b4573a453c6126f8ce73da0bf1257c378827ebb431d6d4064f7662",
+      "patched_sha256": "24ae646f1f7aa2f3c0c45e3948040882a7c55ec865dea778ce15bbd59dd3c9a6"
+    },
+    {
+      "section": "core",
+      "patch": "core/spill-local.patch",
+      "pkg": "@deepseek-ai/dsh-spill-local",
+      "rel": "lib/index.js",
+      "pristine_sha256": "c2f76196cdbab9acb72677aa77f17faa6b1b095bc46360cf44f0fed821ba3eb0",
+      "patched_sha256": "c066f7851dc0d24b0a87dbcbcda963258d2e1a01222641e32862f1831b2ea3f6"
+    },
+    {
+      "section": "core",
+      "patch": "core/sandbox-local.patch",
+      "pkg": "@deepseek-ai/dsh-sandbox-local",
+      "rel": "lib/index.js",
+      "pristine_sha256": "be6e1107871cf8d94c040090b13c405bc833822e2f51ed5280e93eececf762be",
+      "patched_sha256": "6434842f7cb6bb36dea9560d9ed56068673bc6ea697ffbad93c5f9007d24910f"
+    },
+    {
+      "section": "core",
+      "patch": "core/web-fetch-http.patch",
+      "pkg": "@deepseek-ai/dsh-web-fetch-http",
+      "rel": "lib/index.js",
+      "pristine_sha256": "489fef91b0c11c063029ea7aed27b312817570b9c3177aeaa44983b9a25aedcd",
+      "patched_sha256": "d9b868e1627c267d5359a2ce94eefd33cd0c19559a34ce6d8bfed0cf9be7ea5d"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+--- a/lib/flock.js
++++ b/lib/flock.js
+@@ -1,51 +1,78 @@
+-/** Lazy POSIX flock entry; importing it does not load a native addon. */
++/**
++ * Lazy POSIX flock entry; importing it does not load a native addon.
++ *
++ * ANDROID/TERMUX PATCH: prebuilt bindings exist only for glibc/musl linux and
++ * darwin. On android-arm64 (Termux, bionic) none exists, so upstream rejected
++ * every call with "flock is not supported on android-arm64" and dsh could not
++ * open any session. Now the native binding is still preferred, and when it is
++ * unavailable the call falls back to the pure-JS soft lock in ./softlock.js
++ * (atomic O_EXCL sidecar file + pid probe; no flock(2), no fs support needed).
++ */
+ import { createRequire } from 'node:module';
+ import { dirname, join } from 'node:path';
+ import { getSystemErrorName } from 'node:util';
++import { softTryLockExclusive, releaseSoftLock } from './softlock.js';
++
+ let binding;
++let bindingError;
++
++export function hasNativeBinding() {
++    return Boolean(binding);
++}
++
+ function loadBinding() {
+-    if (binding)
+-        return binding;
++    if (binding) return binding;
++    if (bindingError) throw bindingError;
+     const { platform, arch } = process;
+-    if (platform !== 'linux' && platform !== 'darwin') {
+-        throw Object.assign(new Error(`flock is not supported on ${platform}-${arch}`), {
++    if (platform !== 'linux' && platform !== 'darwin' && platform !== 'android') {
++        bindingError = Object.assign(new Error('flock is not supported on ' + platform + '-' + arch), {
+             code: 'ERR_FLOCK_UNSUPPORTED_PLATFORM',
+             syscall: 'flock',
+         });
++        throw bindingError;
+     }
+-    let filename = 'system.node';
+-    if (platform === 'linux') {
+-        // Node's report types omit the libc field supplied by Linux reports.
+-        const report = process.report.getReport();
+-        filename = join(report.header.glibcVersionRuntime ? 'glibc' : 'musl', filename);
++    try {
++        let filename = 'system.node';
++        if (platform === 'linux') {
++            const report = process.report.getReport();
++            filename = join(report.header.glibcVersionRuntime ? 'glibc' : 'musl', filename);
++        }
++        const require = createRequire(import.meta.url);
++        const manifest = require.resolve('@deepseek-ai/node-addon-system-' + platform + '-' + arch + '/package.json');
++        binding = require(join(dirname(manifest), 'bin', filename));
++        return binding;
++    } catch (error) {
++        bindingError = error;
++        throw error;
+     }
+-    const require = createRequire(import.meta.url);
+-    const manifest = require.resolve(`@deepseek-ai/node-addon-system-${platform}-${arch}/package.json`);
+-    binding = require(join(dirname(manifest), 'bin', filename));
+-    return binding;
+ }
++
+ /**
+  * Attempt an exclusive, nonblocking POSIX flock on the caller's descriptor.
+- * The syscall runs in asynchronous work, so acquisition can occur after this
+- * call returns. Keep fd open until the promise settles; the binding never
+- * opens, duplicates, or closes it. Closing the locked descriptor releases the
+- * lock once all descriptors for its open file description are closed.
+- * @param fd - Open file descriptor to lock; ownership remains with the caller.
+- * @returns A promise resolving to void on acquisition. Contention rejects with
+- *   EAGAIN/EWOULDBLOCK; other syscall failures also reject. Syscall errors carry
+- *   code, positive errno, and syscall='flock'. Native setup errors, unsupported
+- *   platforms, and addon loading failures reject; importing alone does not load it.
++ * Keep fd open until the promise settles. Closing the descriptor releases the
++ * native lock; the soft fallback releases on process exit / signal.
++ * Contention rejects with EAGAIN/EWOULDBLOCK.
+  */
+ export async function tryLockExclusive(fd) {
++    let native;
++    try {
++        native = loadBinding();
++    } catch {
++        return softTryLockExclusive(fd);
++    }
+     const errno = await new Promise((resolve) => {
+-        loadBinding().tryLock(fd, resolve);
++        native.tryLock(fd, resolve);
+     });
+-    if (errno === 0)
+-        return;
++    if (errno === 0) return;
+     const code = getSystemErrorName(-errno);
+-    throw Object.assign(new Error(`${code}: flock failed`), {
++    throw Object.assign(new Error(code + ': flock failed'), {
+         code,
+         errno,
+         syscall: 'flock',
+     });
+ }
++
++/** Release a soft lock held through `tryLockExclusive` (no-op when native). */
++export function releaseLock(fd) {
++    return releaseSoftLock(fd);
++}

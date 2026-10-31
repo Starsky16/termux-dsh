@@ -46,7 +46,7 @@ export LDFLAGS="${LDFLAGS:-} -static-libstdc++"
 for t in "$CC" "$CXX" "$AR" "$LD" "$RANLIB"; do [[ -x "$t" ]] || die "缺编译器：$t"; done
 
 HEADERS="$WORK/node-headers/node-v$NODE_TARGET_VERSION"
-if [[ ! -f "$HEADERS/common.gypi" ]]; then
+if [[ ! -f "$HEADERS/include/node/common.gypi" ]]; then
   mkdir -p "$WORK/node-headers"
   TGZ="$WORK/node-headers/node-v$NODE_TARGET_VERSION-headers.tar.gz"
   # npmmirror first (China-friendly), nodejs.org as fallback.
@@ -54,7 +54,7 @@ if [[ ! -f "$HEADERS/common.gypi" ]]; then
     || dl "https://nodejs.org/dist/v$NODE_TARGET_VERSION/node-v$NODE_TARGET_VERSION-headers.tar.gz" "$TGZ"
   tar -xzf "$TGZ" -C "$WORK/node-headers"
 fi
-[[ -f "$HEADERS/common.gypi" ]] || die "Node headers 解包不完整：$HEADERS"
+[[ -f "$HEADERS/include/node/common.gypi" ]] || die "Node headers 解包不完整：$HEADERS"
 
 # node-gyp's bundled copy is not guaranteed; pin a known version.
 NODE_GYP=(npx --yes node-gyp@11)

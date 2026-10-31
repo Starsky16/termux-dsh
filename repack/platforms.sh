@@ -54,6 +54,12 @@ if [[ -f "$BUILD/node_modules/sharp/package.json" ]]; then
   fi
   GOT="$(pkgver "$DEST/package.json")"
   [[ "$GOT" == "$SHARP_VER" ]] || die "sharp wasm 版本不符：$GOT != $SHARP_VER"
+  # sharp-wasm32 loads @emnapi/runtime; npm does not install it when we extract
+  # the tarball manually.
+  EMN_SPEC="$(node -e 'process.stdout.write(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).dependencies["@emnapi/runtime"])' "$DEST/package.json")"
+  if [[ -n "$EMN_SPEC" && ! -f "$BUILD/node_modules/@emnapi/runtime/package.json" ]]; then
+    extract_pkg "@emnapi/runtime@$EMN_SPEC" "$BUILD/node_modules/@emnapi/runtime"
+  fi
   info "sharp wasm32 $SHARP_VER OK"
 else
   info "sharp 未安装，跳过"

@@ -37,7 +37,7 @@ pkg install -y nodejs-lts python git curl ripgrep patch
 BASE=https://github.com/Starsky16/termux-dsh/releases/latest/download
 curl -fL -o "$TMPDIR/dsh-termux.tgz" "$BASE/dsh-termux.tgz"
 curl -fL -o "$TMPDIR/dsh-termux.tgz.sha256" "$BASE/dsh-termux.tgz.sha256"
-sha256sum -c "$TMPDIR/dsh-termux.tgz.sha256"
+( cd "$TMPDIR" && sha256sum -c dsh-termux.tgz.sha256 )
 
 # 3) 全局安装（包内已含原生模块与 A/B 类补丁）
 npm i -g "$TMPDIR/dsh-termux.tgz"

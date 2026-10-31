@@ -6,7 +6,7 @@
 #   2. apply the A-class host patches and B5 to the build tree
 #   3. add esbuild/sharp platform packages
 #   4. NDK-cross-compile koffi and node-pty
-#   5. assemble a dsh-termux package, npm pack it, hard-verify the tarball
+#   5. assemble a dsh-termux package, tar it, hard-verify the tarball
 #
 # Usage: repack.sh [upstream-version] [--dry-run]
 #   upstream-version  empty or "latest" → resolve @deepseek-ai/dsh@latest
@@ -186,9 +186,9 @@ p.tdsh = {
 fs.writeFileSync(file, JSON.stringify(p, null, 2) + "\n");
 NODE
 
-# npm pack excludes node_modules unless every bundled package is listed in
-# bundledDependencies. Build that list from the actual assembled tree so the
-# tarball is self-contained and `npm i -g` does not reach the registry.
+# `npm i -g` only keeps node_modules as bundled payload when every package is
+# listed in bundledDependencies. Build that list from the actual assembled tree
+# so the tarball is self-contained and npm does not reach the registry.
 node - "$PKGDIR" <<'NODE'
 const fs = require("fs");
 const path = require("path");
@@ -218,8 +218,13 @@ fs.writeFileSync(file, JSON.stringify(p, null, 2) + "\n");
 console.log(`bundled ${p.bundledDependencies.length} packages`);
 NODE
 
-TARBALL="$(cd "$PKGDIR" && npm pack --pack-destination "$DIST" 2>"$WORK/npm-pack.err" | tail -1)"[[ -n "$TARBALL" && -f "$DIST/$TARBALL" ]] || { cat "$WORK/npm-pack.err" >&2; die "npm pack 失败"; }
-cp -f "$DIST/$TARBALL" "$DIST/dsh-termux.tgz"
+info "  打包"
+# Plain tar instead of `npm pack`: npm pack rescans the 1GB tree for every
+# bundled package (minutes on Windows); tar -1 produces the same npm-installable
+# layout in seconds. bundledDependencies above still tells npm not to fetch.
+( cd "$WORK" && tar -cf - package | gzip -1 >"$DIST/dsh-termux.tgz" ) \
+  || die "tar 打包失败"
+[[ -s "$DIST/dsh-termux.tgz" ]] || die "tarball 为空"
 sha256sum "$DIST/dsh-termux.tgz" | awk '{print $1"  dsh-termux.tgz"}' > "$DIST/dsh-termux.tgz.sha256"
 printf '%s\n' "$VER" > "$DIST/version.txt"
 cat > "$DIST/release-notes.md" <<EOF
@@ -227,7 +232,7 @@ cat > "$DIST/release-notes.md" <<EOF
 
 - 上游：\`@deepseek-ai/dsh@$UPSTREAM\`
 - 原生：koffi（NDK 交叉编译，API 24 / arm64-v8a）、node-pty（Node $NODE_TARGET_VERSION headers）
-- 补丁：A 类宿主 7 target / 8 文件；B1–B5；HMR 通过 profile 覆盖禁用
+- 补丁：A 类宿主 7 target / 8 文件；B1–B10；HMR 通过 profile 覆盖禁用
 - 非上游官方产物；由 Starsky16/termux-dsh 的 CI 从官方 npm 包重组
 - 安装：\`npm i -g dsh-termux-$VER.tgz\`（或按仓库 README 的 bootstrap）
 EOF

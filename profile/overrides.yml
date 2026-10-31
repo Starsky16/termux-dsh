@@ -1,0 +1,44 @@
+# Termux/Android dsh profile overrides.
+#
+# This file is the single source for apply-overrides.sh: the script extracts
+# each "# --- block: ... ---" section and appends it to a profile's
+# cordis.patch.yml only when that block is missing.
+#
+# These are dsh *host service* settings, not plugin configuration:
+#   - no Landlock/bwrap ⇒ opt into the sandbox's unconfined fallback
+#   - full access on this device by default; DSH_PERMISSION_MODE still wins
+#   - the local resolver answers inside 198.18.0.0/15 ⇒ admit that block
+#   - HMR needs Node internals unavailable on Termux ⇒ disable it
+#
+# The last point replaces a B6 source patch: dsh-plugin-manager handles a
+# missing `hmr` service with its documented `no-hmr` restart path.
+
+# --- block: sandbox ---
+- id: sandbox
+  name: "@deepseek-ai/dsh-sandbox-local"
+  config:
+    allowUnconfinedFallback: true
+
+- id: sandbox-policy
+  name: "@deepseek-ai/dsh-sandbox-policy"
+  config:
+    mode: !!js process.env.DSH_PERMISSION_MODE ?? 'danger-full-access'
+    workspaceRoot: !!js process.cwd()
+
+- id: approval
+  name: "@deepseek-ai/dsh-user-approval"
+  config:
+    policy: !!js "(process.env.DSH_PERMISSION_MODE ?? 'danger-full-access') === 'danger-full-access' ? 'never' : 'ask'"
+
+# --- block: web-fetch ---
+- id: web-fetch-http
+  name: "@deepseek-ai/dsh-web-fetch-http"
+  config:
+    allowBenchmarkAddresses: true
+
+# --- block: hmr ---
+- id: hmr
+  name: "@deepseek-ai/dsh-hmr"
+  disabled: true
+  config:
+    root: []

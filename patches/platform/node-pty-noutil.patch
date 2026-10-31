@@ -1,6 +1,6 @@
 --- a/binding.gyp
 +++ b/binding.gyp
-@@ -59,9 +59,9 @@
+@@ -59,11 +59,11 @@
            'sources': [
              'src/unix/pty.cc',
            ],
@@ -11,5 +11,8 @@
 +          # the NDK sysroot ships no libutil, so -lutil breaks the link.
 +          'libraries': [],
            'cflags': ['-Wall'],
-           'ldflags': [],
+-          'ldflags': [],
++          'ldflags': ['-static-libstdc++'],
            'conditions': [
+             # http://www.gnu.org/software/gnulib/manual/html_node/forkpty.html
+             #   One some systems (at least including Cygwin, Interix,

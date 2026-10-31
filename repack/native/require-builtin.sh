@@ -17,6 +17,7 @@ NDK="${ANDROID_NDK_HOME:-${ANDROID_NDK_ROOT:-}}"
 [[ -n "$NDK" && -d "$NDK" ]] || die "ANDROID_NDK_HOME 未设置或不存在"
 NODE_TARGET_VERSION="${NODE_TARGET_VERSION:-$(node -p 'process.versions.node')}"
 WORK="${WORK:?WORK 未设置}"
+REPO_ROOT="${REPO_ROOT:?REPO_ROOT 未设置}"
 
 PKG="$BUILD/node_modules/node-addon-require-builtin"
 [[ -f "$PKG/package.json" ]] || die "缺 node-addon-require-builtin：$PKG"
@@ -36,6 +37,8 @@ if ! git -C "$SRC" cat-file -e "$SRC_COMMIT^{commit}" 2>/dev/null; then
   git -C "$SRC" fetch --depth 1 origin "$SRC_COMMIT"
 fi
 git -C "$SRC" checkout -q --detach "$SRC_COMMIT"
+# Keep libc++ static: Termux's Node does not expose the NDK libc++_shared.so.
+( cd "$SRC" && patch -p1 --forward --batch < "$REPO_ROOT/patches/platform/require-builtin-static.patch" )
 
 # binding.gyp resolves node-addon-api from the source tree. The dsh dependency
 # tree may carry an older 7.x; this source pins 8.9.0, which has the

@@ -1,0 +1,12 @@
+--- a/packages/native/binding.gyp
++++ b/packages/native/binding.gyp
+@@ -55,6 +55,9 @@
+         "-fno-exceptions",
+         "-fvisibility=hidden"
+       ],
++      "ldflags": [
++        "-static-libstdc++"
++      ],
+       "xcode_settings": {
+         "GCC_ENABLE_CPP_EXCEPTIONS": "NO",
+         "GCC_SYMBOLS_PRIVATE_EXTERN": "YES",

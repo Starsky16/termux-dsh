@@ -31,6 +31,18 @@ check_elf() {
   local file="$1" label="$2"
   if [[ -f "$file" ]] && file "$file" | grep -q 'ARM aarch64'; then pass "$label"; else bad "$label ($(file "$file" 2>/dev/null || echo missing))"; fi
 }
+check_no_libcxx() {
+  local file="$1" label="$2"
+  if ! command -v readelf >/dev/null 2>&1; then
+    skip "$label (no readelf)"
+    return
+  fi
+  if readelf -d "$file" 2>/dev/null | grep -q 'libc++_shared'; then
+    bad "$label links libc++_shared (Termux has no such library)"
+  else
+    pass "$label static libc++"
+  fi
+}
 
 # Identity
 jsonval() {
@@ -56,6 +68,9 @@ check_file "$RB" "require-builtin android-arm64 binary"
 check_elf "$KOFFI" "koffi is ARM aarch64"
 check_elf "$PTY" "node-pty is ARM aarch64"
 check_elf "$RB" "require-builtin is ARM aarch64"
+check_no_libcxx "$KOFFI" "koffi"
+check_no_libcxx "$PTY" "node-pty"
+check_no_libcxx "$RB" "require-builtin"
 
 # A-class patch markers (these are the reasons the package is Termux-specific)
 check_grep "$PKG/node_modules/@vscode/ripgrep/lib/index.js" 'systemRipgrep' "A1 ripgrep fallback"

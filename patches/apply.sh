@@ -67,6 +67,11 @@ CLASS_WHY=""
 classify() {
   local pkg="$1" rel="$2" pristine="$3" patched="$4" create="$5"
   local dest="$NM/$pkg/$rel"
+  # A create target only exists after the package itself is installed. In a
+  # fresh profile tree (no node_modules), every target is "not installed" —
+  # treating the missing softlock.js as "to be created" makes --check fail on
+  # a healthy install with no plugins.
+  if [[ ! -d "$NM/$pkg" ]]; then CLASS=0; CLASS_WHY="not installed"; return; fi
   if [[ ! -f "$dest" ]]; then
     if [[ "$create" == "1" ]]; then CLASS=1; CLASS_WHY="missing (to be created)"
     else CLASS=0; CLASS_WHY="not installed"; fi

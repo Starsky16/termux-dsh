@@ -29,6 +29,11 @@ WORK="${TMPDIR:-/tmp}/termux-dsh-install"
 TGZ="$WORK/dsh-termux.tgz"
 SHA="$WORK/dsh-termux.tgz.sha256"
 
+# Non-interactive shells (and some agent shells) do not export PREFIX.
+if [[ -z "${PREFIX:-}" && -d /data/data/com.termux/files/usr ]]; then
+  PREFIX=/data/data/com.termux/files/usr
+  export PREFIX
+fi
 [[ -n "${PREFIX:-}" && -d "${PREFIX:-}" ]] || die "不是 Termux 环境（PREFIX 未设置）"
 [[ "$(uname -m)" == "aarch64" ]] || die "只支持 arm64/aarch64，当前 $(uname -m)"
 

@@ -48,10 +48,14 @@ GOT_VER="$(jsonval "$PKG/package.json" version)"
 # Native payloads
 KOFFI="$PKG/node_modules/koffi/build/koffi/android_arm64/koffi.node"
 PTY="$PKG/node_modules/node-pty/prebuilds/android-arm64/pty.node"
+NODE_ABI="$(node -p 'process.versions.modules')"
+RB="$PKG/node_modules/node-addon-require-builtin/build/nodeabi/node-v$NODE_ABI-android-arm64/require_builtin.node"
 check_file "$KOFFI" "koffi android-arm64 binary"
 check_file "$PTY" "node-pty android-arm64 prebuild"
+check_file "$RB" "require-builtin android-arm64 binary"
 check_elf "$KOFFI" "koffi is ARM aarch64"
 check_elf "$PTY" "node-pty is ARM aarch64"
+check_elf "$RB" "require-builtin is ARM aarch64"
 
 # A-class patch markers (these are the reasons the package is Termux-specific)
 check_grep "$PKG/node_modules/@vscode/ripgrep/lib/index.js" 'systemRipgrep' "A1 ripgrep fallback"

@@ -56,7 +56,8 @@ B 类补丁在 `repack/native/*.sh` 里对下载的源码副本执行，**不发
 | B3 | `koffi/src/koffi/CMakeLists.txt` | 源码补丁 | Android 分支追加 `-Wl,--unresolved-symbols=ignore-all`（Node-API 符号由 Node 运行时提供） | `platform/koffi-cmake.patch` |
 | B4 | `node-pty/binding.gyp` | 源码补丁 | Android 构建去掉 `-lutil`（Bionic 的 PTY API 在 libc，NDK sysroot 无 libutil） | `platform/node-pty-noutil.patch` |
 | B5 | `@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js` | 源码补丁 | import 加 `rename`；`materializePosix` 在 Android 用 `rename(tmp, finalPath)` 发布，其余 POSIX 保留 `link` no-replace；**漏了会话存不住** | `platform/session-rename.patch` |
-| B6 | `@deepseek-ai/dsh-hmr` | **配置替代** | 上游 rc.5 的 HMR 构造器仍要求 `ctx.loader.internal`；`node-addon-require-builtin` 无 android-arm64 预编译 ⇒ Termux 上 HMR 会启动即抛。**不生成源码补丁**，改在 `profile/overrides.yml` 里禁用 `hmr`；`dsh-plugin-manager` 对 `hmr === undefined` 有 `no-hmr` 回退，插件操作仍可用（需重启生效） | `profile/overrides.yml` |
+| B6 | `@deepseek-ai/dsh-hmr` | **配置替代** | 上游 rc.5 的 HMR 构造器仍要求 `ctx.loader.internal`；**禁用 HMR** 改在 `profile/overrides.yml`，`dsh-plugin-manager` 对 `hmr === undefined` 有 `no-hmr` 回退。**注意**：缺 `node-addon-require-builtin` 发生在 `cordis-plugin-loader` 的 host preparation，早于 HMR；禁用 HMR **不能**替代 B11 | `profile/overrides.yml` |
+| B11 | `node-addon-require-builtin` | 原生构建 | `cordis-plugin-loader` 启动必经 `require('node-addon-require-builtin')`；上游 optionalDependencies **无 android 包**（`node-addon-require-builtin-android-arm64` 404）。从 public 源码 `a58d359…`（0.1.9）NDK 交叉编译 nodeabi backend，产物落到 loader 的 `build/nodeabi/node-v<modules>-android-arm64/require_builtin.node`；ABI 本机 = 137 | `repack/native/require-builtin.sh` |
 | B7 | koffi 原生构建 | 构建步骤 | NDK toolchain + `cnoke.cjs -t android_arm64 --release`，API 24 / arm64-v8a；libc++ 静态链接（与 koffi 官方 Android 预编译一致，避免运行时 `libc++_shared.so` 依赖） | `repack/native/koffi.sh` |
 | B8 | node-pty 原生构建 | 构建步骤 | Node headers + `node-gyp rebuild --arch=arm64 --nodedir=...`，CC/CXX/AR/LD/RANLIB 指向 NDK；产物入 `prebuilds/android-arm64/pty.node` | `repack/native/node-pty.sh` |
 | B9 | esbuild / sharp | 平台件 | 显式装 `@esbuild/android-arm64@<ver>`；sharp 走 `@img/sharp-wasm32@<ver>` + `@emnapi/runtime`（native 平台包无 Android 条目） | `repack/platforms.sh` |
@@ -65,9 +66,11 @@ B 类补丁在 `repack/native/*.sh` 里对下载的源码副本执行，**不发
 > **B5 为什么不能漏**：官方 npm 包没有向日葵构建期那层 `rename` 兜底。Android 上
 > `link(2)` 被 SELinux 拒绝，首次会话创建就会失败。
 >
-> **B6 的边界**：这不是插件适配，而是 dsh 本体默认 bundle（`dsh-base`）在 Android
-> 上缺少 `loader.internal` 的启动问题；禁用 HMR 只影响热重载，不影响插件安装与运行。
-> 若上游将来把 HMR 改成可降级，删除 `profile/overrides.yml` 里的 `hmr` 覆盖即可。
+> **B6 的边界**：禁用 HMR 只影响热重载，不影响插件安装与运行；但它**不能**替代
+> B11。`cordis-plugin-loader` 在 host preparation 阶段就 require
+> `node-addon-require-builtin`，缺该 addon 时 `dsh web` 直接 fatal（2026-10-31
+> 真机实测）。若上游将来把 HMR 改成可降级，删除 `profile/overrides.yml` 里的
+> `hmr` 覆盖即可；B11 仍需保留，直到上游发布 android 预编译包。
 
 ---
 
@@ -124,3 +127,16 @@ bash profile/apply-overrides.sh
 `profile/overrides.yml` 同时包含 `hmr` 的 `disabled: true`。升级 dsh 后若上游已修复
 HMR 的可降级路径，可删除该条并重跑 `apply-overrides.sh`（脚本只追加缺失的块，
 不会自动删除旧条目；需手工编辑 profile 的 `cordis.patch.yml`）。
+
+### B11 / require-builtin
+
+```bash
+BUILD=... WORK=... REPO_ROOT=... bash repack/native/require-builtin.sh
+```
+
+源码固定 commit `a58d3599a2e551d7d706d1ff796c9fd4bbaff63c`（公开仓
+`deepseek-ai/dsh-node-addon-require-builtin`，0.1.9）。`node-gyp` 以
+`narb_backend=nodeabi narb_product=require-builtin` 编译；产物必须落在
+`node-addon-require-builtin/build/nodeabi/node-v<process.versions.modules>-android-arm64/require_builtin.node`
+（本机 Node 24.22.1 → 137）。升级 dsh 带来的 ABI 变化时，重新 `--dump-config` 后真正
+boot 一次；`--version` / `--help` / `--dump-config` 不触发 host preparation，CI 不能只靠它们。

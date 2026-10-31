@@ -5,7 +5,7 @@
 #   1. npm install @deepseek-ai/dsh@<upstream> for android/arm64 (scripts off)
 #   2. apply the A-class host patches and B5 to the build tree
 #   3. add esbuild/sharp platform packages
-#   4. NDK-cross-compile koffi and node-pty
+#   4. NDK-cross-compile koffi, node-pty and node-addon-require-builtin
 #   5. assemble a dsh-termux package, tar it, hard-verify the tarball
 #
 # Usage: repack.sh [upstream-version] [--dry-run]
@@ -128,6 +128,8 @@ BUILD="$BUILD" WORK="$WORK" NODE_TARGET_VERSION="$NODE_TARGET_VERSION" REPO_ROOT
   bash "$HERE/native/koffi.sh"
 BUILD="$BUILD" WORK="$WORK" NODE_TARGET_VERSION="$NODE_TARGET_VERSION" REPO_ROOT="$ROOT" \
   bash "$HERE/native/node-pty.sh"
+BUILD="$BUILD" WORK="$WORK" NODE_TARGET_VERSION="$NODE_TARGET_VERSION" REPO_ROOT="$ROOT" \
+  bash "$HERE/native/require-builtin.sh"
 
 # Drop host prebuilds/build caches: the tarball must contain only the Android
 # payload, otherwise a valid-looking package can carry x64/win32 binaries.
@@ -232,7 +234,7 @@ cat > "$DIST/release-notes.md" <<EOF
 
 - 上游：\`@deepseek-ai/dsh@$UPSTREAM\`
 - 原生：koffi（NDK 交叉编译，API 24 / arm64-v8a）、node-pty（Node $NODE_TARGET_VERSION headers）
-- 补丁：A 类宿主 7 target / 8 文件；B1–B10；HMR 通过 profile 覆盖禁用
+- 补丁：A 类宿主 7 target / 8 文件；B1–B11；HMR 通过 profile 覆盖禁用；require-builtin 由 B11 编译
 - 非上游官方产物；由 Starsky16/termux-dsh 的 CI 从官方 npm 包重组
 - 安装：\`npm i -g dsh-termux-$VER.tgz\`（或按仓库 README 的 bootstrap）
 EOF

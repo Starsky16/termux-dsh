@@ -30,7 +30,7 @@ patches/
 └─ platform/*.patch          B 类移植层补丁（koffi/node-pty/session）
 repack/
 ├─ repack.sh                 本地与 CI 共用：官方 npm 基座 → 原生 → 补丁 → pack → 校验
-├─ native/{koffi,node-pty}.sh
+├─ native/{koffi,node-pty,require-builtin}.sh
 ├─ platforms.sh              esbuild/sharp 平台件
 └─ verify-package.sh         产物架构/必需文件/版本/补丁断言
 profile/{overrides.yml,apply-overrides.sh,setup-env.sh}   dsh 本体服务配置覆盖与环境块（幂等，不含插件）

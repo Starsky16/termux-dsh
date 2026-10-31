@@ -5,3 +5,18 @@ build/
 dist/
 tmp/
 *.tgz
+
+# 本地 AI 记忆软链（实体在 workflow-sync，不入库）
+AGENTS.md
+AGENTS.local.md
+CLAUDE.md
+CLAUDE.local.md
+
+# 密钥/环境
+.env*
+*.jks*
+*.keystore
+keystore/
+
+# 运行时日志
+*.log

@@ -42,9 +42,8 @@ sha256sum -c "$TMPDIR/dsh-termux.tgz.sha256"
 # 3) 全局安装（包内已含原生模块与 A/B 类补丁）
 npm i -g "$TMPDIR/dsh-termux.tgz"
 
-# 4) 环境变量
-#    bootstrap.sh 会写 ~/.zshenv 的 termux-dsh 标记块（PATH/Android/Flutter 镜像）；
-#    手工安装可跳过，不影响 dsh 启动，只影响后续工具链脚本。
+# 4) 环境变量（写入 ~/.zshenv 的 termux-dsh 标记块，幂等）
+bash ~/code/termux-dsh/profile/setup-env.sh
 
 # 5) profile 覆盖（sandbox / approval / web-fetch，幂等）
 bash ~/code/termux-dsh/profile/apply-overrides.sh

@@ -33,7 +33,7 @@ repack/
 ├─ native/{koffi,node-pty}.sh
 ├─ platforms.sh              esbuild/sharp 平台件
 └─ verify-package.sh         产物架构/必需文件/版本/补丁断言
-profile/{overrides.yml,apply-overrides.sh}   dsh 本体服务配置覆盖（幂等，不含插件）
+profile/{overrides.yml,apply-overrides.sh,setup-env.sh}   dsh 本体服务配置覆盖与环境块（幂等，不含插件）
 wiring/link-workspace.sh     两槽记忆/技能/hooks/bin/plans 接线
 toolchain/*.sh               flutter / glibc-shims / android-sdk-x86-shims / gradle-seed
 docs/verify-checklist.md     需在会话里跑的行为项

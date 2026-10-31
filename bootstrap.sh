@@ -30,6 +30,14 @@ WANT="$(cut -d' ' -f1 "$SHA")"
 
 info "[3/8] 全局安装（包内已含原生模块与 A/B 类补丁）"
 npm i -g --ignore-scripts "$TGZ"
+# npm 生成的 bin shebang 固定是 #!/usr/bin/env node，Termux 没有 /usr/bin/env。
+if have termux-fix-shebang; then
+  termux-fix-shebang "$(command -v dsh)"
+  DSH_JS="$(npm root -g)/dsh-termux/lib/bin.js"
+  [[ -f "$DSH_JS" ]] && termux-fix-shebang "$DSH_JS"
+else
+  warn "缺 termux-fix-shebang；若 dsh 报 bad interpreter，执行 pkg install termux-tools"
+fi
 if have dsh; then
   dsh --version | grep -q -- '-tdsh\.' || warn "dsh 版本未含 -tdsh.：$(dsh --version 2>&1 || true)"
 else

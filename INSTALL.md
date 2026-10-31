@@ -41,6 +41,8 @@ curl -fL -o "$TMPDIR/dsh-termux.tgz.sha256" "$BASE/dsh-termux.tgz.sha256"
 
 # 3) 全局安装（包内已含原生模块与 A/B 类补丁）
 npm i -g --ignore-scripts "$TMPDIR/dsh-termux.tgz"
+# npm 的 bin shebang 是 #!/usr/bin/env node，Termux 没有 /usr/bin/env
+termux-fix-shebang "$(command -v dsh)" "$(npm root -g)/dsh-termux/lib/bin.js"
 
 # 4) 环境变量（写入 ~/.zshenv 的 termux-dsh 标记块，幂等）
 bash ~/code/termux-dsh/profile/setup-env.sh

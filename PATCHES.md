@@ -57,7 +57,7 @@ B 类补丁在 `repack/native/*.sh` 里对下载的源码副本执行，**不发
 | B4 | `node-pty/binding.gyp` | 源码补丁 | Android 构建去掉 `-lutil`（Bionic 的 PTY API 在 libc，NDK sysroot 无 libutil） | `platform/node-pty-noutil.patch` |
 | B5 | `@deepseek-ai/dsh-session-persistence-jsonl/lib/index.js` | 源码补丁 | import 加 `rename`；`materializePosix` 在 Android 用 `rename(tmp, finalPath)` 发布，其余 POSIX 保留 `link` no-replace；**漏了会话存不住** | `platform/session-rename.patch` |
 | B6 | `@deepseek-ai/dsh-hmr` | **配置替代** | 上游 rc.5 的 HMR 构造器仍要求 `ctx.loader.internal`；`node-addon-require-builtin` 无 android-arm64 预编译 ⇒ Termux 上 HMR 会启动即抛。**不生成源码补丁**，改在 `profile/overrides.yml` 里禁用 `hmr`；`dsh-plugin-manager` 对 `hmr === undefined` 有 `no-hmr` 回退，插件操作仍可用（需重启生效） | `profile/overrides.yml` |
-| B7 | koffi 原生构建 | 构建步骤 | NDK toolchain + `cnoke.cjs -t android_arm64 --release`，API 24 / arm64-v8a | `repack/native/koffi.sh` |
+| B7 | koffi 原生构建 | 构建步骤 | NDK toolchain + `cnoke.cjs -t android_arm64 --release`，API 24 / arm64-v8a；libc++ 静态链接（与 koffi 官方 Android 预编译一致，避免运行时 `libc++_shared.so` 依赖） | `repack/native/koffi.sh` |
 | B8 | node-pty 原生构建 | 构建步骤 | Node headers + `node-gyp rebuild --arch=arm64 --nodedir=...`，CC/CXX/AR/LD/RANLIB 指向 NDK；产物入 `prebuilds/android-arm64/pty.node` | `repack/native/node-pty.sh` |
 | B9 | esbuild / sharp | 平台件 | 显式装 `@esbuild/android-arm64@<ver>`；sharp 走 `@img/sharp-wasm32@<ver>`（native 平台包无 Android 条目） | `repack/platforms.sh` |
 

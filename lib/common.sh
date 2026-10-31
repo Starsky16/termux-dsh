@@ -19,9 +19,10 @@ sha() {
 # 仓库为 public，Release 资产直连下载，不拼 gh-proxy 前缀。
 dl() {
   local url="$1" dest="$2" want="${3:-}"
-  [[ -f "$dest" ]] || {
+  if [[ ! -f "$dest" ]]; then
     mkdir -p "$(dirname "$dest")"
-    curl -fL --retry 3 --retry-delay 2 -o "$dest" "$url"
-  }
+    curl -fL --retry 3 --retry-delay 2 -o "$dest" "$url" || { rm -f "$dest"; return 1; }
+  fi
+  [[ -s "$dest" ]] || { rm -f "$dest"; return 1; }
   [[ -z "$want" ]] || [[ "$(sha "$dest")" == "$want" ]] || die "sha256 不符：$dest"
 }

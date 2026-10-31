@@ -41,8 +41,9 @@ docs/verify-checklist.md     需在会话里跑的行为项
 
 安装与分步验证见 [`INSTALL.md`](INSTALL.md)，补丁原理与重生成见 [`PATCHES.md`](PATCHES.md)。
 
-> **M0 状态**：CI 重组包与首个 Release 尚未产出。发布前 `bootstrap.sh` 会在下载步骤
-> 明确失败；开发/验证期请按 `INSTALL.md` 的分步操作。首个 Release 发布后本节删除。
+> **首个 Release**：`v0.2.1-rc.5-tdsh.1`（pre-release）已发布，资产
+> `dsh-termux.tgz` + `.sha256`。`bootstrap.sh` 会通过 GitHub API 解析最新 tag
+> （`/releases/latest` 不含 pre-release），也可用 `TDSH_RELEASE_BASE` 指定 tag URL。
 
 ## 已知问题
 

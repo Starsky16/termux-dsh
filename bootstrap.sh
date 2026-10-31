@@ -8,7 +8,23 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/lib/common.sh"
 
-BASE="${TDSH_RELEASE_BASE:-https://github.com/Starsky16/termux-dsh/releases/latest/download}"
+# GitHub's /releases/latest/download excludes pre-releases, and this repo
+# publishes rc builds as pre-releases. Resolve the newest tag through the API;
+# TDSH_RELEASE_BASE still overrides everything.
+resolve_release_base() {
+  if [[ -n "${TDSH_RELEASE_BASE:-}" ]]; then
+    printf '%s\n' "$TDSH_RELEASE_BASE"
+    return 0
+  fi
+  local tag
+  tag="$(curl -fsSL 'https://api.github.com/repos/Starsky16/termux-dsh/releases?per_page=10' 2>/dev/null \
+    | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -1 || true)"
+  if [[ -n "$tag" ]]; then
+    printf 'https://github.com/Starsky16/termux-dsh/releases/download/%s\n' "$tag"
+  else
+    printf 'https://github.com/Starsky16/termux-dsh/releases/latest/download\n'
+  fi
+}
 WORK="${TMPDIR:-/tmp}/termux-dsh-install"
 TGZ="$WORK/dsh-termux.tgz"
 SHA="$WORK/dsh-termux.tgz.sha256"
@@ -21,6 +37,7 @@ pkg install -y nodejs-lts python git curl ripgrep patch coreutils file
 node -e 'const v=process.versions.node.split(".").map(Number);process.exit((v[0]>24||(v[0]==24&&v[1]>=2))?0:1)' \
   || die "需要 Node >= 24.2（pkg install nodejs-lts），当前 $(node -v)"
 
+BASE="$(resolve_release_base)"
 info "[2/8] 下载重组包"
 mkdir -p "$WORK"
 dl "$BASE/dsh-termux.tgz" "$TGZ" || die "下载失败：$BASE/dsh-termux.tgz（Release 是否已发布？）"

@@ -86,6 +86,27 @@ web-fetch / HMR 配置、技能与 hooks 接线。以下项目需要启动 `dsh 
 
 完整步骤与预期见 [`docs/verify-checklist.md`](docs/verify-checklist.md)。
 
+## 启动自检（L2 补丁）
+
+`bootstrap.sh` 会在 `~/.zshenv` 写入一个独立的 `dsh()` 函数（标记块
+`# >>> termux-dsh selfcheck >>>`）：如果 `~/code/dsh-compat/bin/selfcheck.mjs`
+存在，就在每次交互式 `dsh` 调用前校验全局树里的 L2 补丁；缺失/漂移只向 stderr
+告警，**不阻塞、不自动修复**。未安装 `dsh-compat` 时完全跳过。
+
+写入后重开 shell（或 `exec zsh -l`）生效；`bootstrap.sh` 当前 shell 不会自动加载这个函数。
+
+```bash
+# 单独重写（幂等）
+bash ~/code/termux-dsh/profile/setup-selfcheck.sh
+
+# 回退：删除整个标记块后重开 shell
+sed -i '/^# >>> termux-dsh selfcheck >>>$/,/^# <<< termux-dsh selfcheck <<<$/d' ~/.zshenv
+```
+
+注意：只覆盖交互 shell 里的 `dsh` 调用；`command dsh`、绝对路径
+`$PREFIX/bin/dsh`、桌面快捷方式不经过这个函数。升级 `dsh-termux` 后若看到
+“L2 补丁未就绪”，需手动用 `dsh-compat` 的 `patch.mjs --apply` 重打。
+
 ## 升级与回滚
 
 升级：重新跑 `bootstrap.sh` 即可（会覆盖全局 `dsh-termux`）。若之后执行过

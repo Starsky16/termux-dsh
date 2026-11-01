@@ -9,6 +9,12 @@
 - 发布前给 `.github/workflows/repack.yml` 增加 `prerelease` 开关（当前 `gh release create`
   硬编码 `--prerelease`），并在 Termux 回归通过后标记 Latest。
 
+### Added
+
+- T7 启动自检：`profile/setup-selfcheck.sh` 在 `~/.zshenv` 写入独立的 `dsh()` 包装，
+  调用 `dsh-compat` 的 `selfcheck.mjs` 检查 L2 补丁；只告警，不阻塞、不自动修复。
+  `bootstrap.sh` 在 `setup-env.sh` 后幂等接线；未安装 dsh-compat 时自动跳过。
+
 ## [0.2.1-rc.5-tdsh.3] — 2026-10-31
 
 **Termux 真机验证通过。** 首个可用的正式验收版本（GitHub 上仍是 pre-release，因为上游是 rc）。

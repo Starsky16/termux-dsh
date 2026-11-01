@@ -66,8 +66,9 @@ else
   die "安装后找不到 dsh 命令"
 fi
 
-info "[4/8] 环境变量"
+info "[4/8] 环境变量与启动自检"
 bash "$HERE/profile/setup-env.sh"
+bash "$HERE/profile/setup-selfcheck.sh"
 
 info "[5/8] profile 覆盖（sandbox/approval/web-fetch/HMR）"
 bash "$HERE/profile/apply-overrides.sh"

@@ -140,3 +140,19 @@ BUILD=... WORK=... REPO_ROOT=... bash repack/native/require-builtin.sh
 `node-addon-require-builtin/build/nodeabi/node-v<process.versions.modules>-android-arm64/require_builtin.node`
 （本机 Node 24.22.1 → 137）。升级 dsh 带来的 ABI 变化时，重新 `--dump-config` 后真正
 boot 一次；`--version` / `--help` / `--dump-config` 不触发 host preparation，CI 不能只靠它们。
+
+## 启动自检（T7，非补丁）
+
+`profile/setup-selfcheck.sh` 在 `~/.zshenv` 追加独立标记块
+`# >>> termux-dsh selfcheck >>>`，定义 `dsh()` 函数：每次交互式调用 `dsh` 前，
+若 `~/code/dsh-compat/bin/selfcheck.mjs` 存在，则按全局树校验 L2 补丁；
+未打 / 漂移 / 目标缺失只写 stderr 告警，**退出码仍为 0，不自动重打、不阻塞启动**。
+
+- 只覆盖交互 shell 的 `dsh`；`command dsh`、绝对路径、非 shell 进程不经过。
+- 未安装 `dsh-compat` 时完全跳过，不成为新依赖。
+- 回退：删除整个 `# >>> termux-dsh selfcheck >>>` 块后重开 shell。
+- 升级 `dsh-termux` 会覆盖全局树补丁；看到告警后用 `dsh-compat` 的
+  `patch.mjs --apply` 重打，而不是改本仓。
+
+验证步骤与判据见
+`workflow-sync/handoff/20261101-dsh-compat-T7接线-termux-dsh.md`。

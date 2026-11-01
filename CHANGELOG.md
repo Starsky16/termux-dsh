@@ -9,16 +9,21 @@
 - 发布前给 `.github/workflows/repack.yml` 增加 `prerelease` 开关（当前 `gh release create`
   硬编码 `--prerelease`），并在 Termux 回归通过后标记 Latest。
 
+## [0.2.1-rc.5-tdsh.4] — 2026-11-01
+
 ### Added
 
 - 可选 Termux `.deb`：`repack/deb.sh` 把同一运行时树组装成
-  `dsh-termux_<version>_aarch64.deb`，含 `$PREFIX/bin/dsh`、profile 初始化与
-  `dsh-termux-setup`；CI 同时上传 tarball 与 `.deb`。
+  `dsh-termux_<version>_aarch64.deb`，含 `$PREFIX/bin/dsh`、`dsh-termux-setup`、
+  `dsh-termux-verify`、profile/补丁脚本与 `postinst` 首次配置。
+- 包内 `verify.sh` / `docs/verify-checklist.md`，`dsh-termux-verify` 可直接跑回归。
+- T7B `~/bin/dsh` selfcheck wrapper（`setsid`/`nohup`/`env`/`sh -c` 全覆盖）。
 
-- T7 启动自检：`profile/setup-selfcheck.sh` 安装 `~/bin/dsh` wrapper，调用
-  `dsh-compat` 的 `selfcheck.mjs` 检查 L2 补丁；只告警，不阻塞、不自动修复。
-  覆盖 `setsid`/`nohup`/`env`/`sh -c` 等 PATH 启动；未安装 dsh-compat 时自动跳过。
-  `bootstrap.sh` 在 `setup-env.sh` 后幂等接线，并迁移掉旧 `.zshenv` 函数块。
+### Verified
+
+- CI dry-run `41263482295`：tarball + `.deb` + `verify-deb.sh` 全 PASS；发布 `41263800744`。
+- `.deb` 38,972,226 B，sha256 `5eeab825…`；tarball 121,726,911 B，sha256 `ed976c79…`。
+- `.deb` 的 Termux 安装/卸载尚待真机复验。
 
 ## [0.2.1-rc.5-tdsh.3] — 2026-10-31
 

@@ -9,10 +9,10 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/platform-Termux%20arm64-informational)
 
-> **当前状态（2026-10-31）**：`v0.2.1-rc.5-tdsh.3` 已在 Termux 真机验证通过
+> **当前状态（2026-10-31）**：运行时 `v0.2.1-rc.5-tdsh.3` 已在 Termux 真机验证通过
 > （vivo iPA2575 / Android 16 / aarch64）：`bootstrap.sh` 8 步无 `die`、`verify.sh` 12/12 PASS、
-> `dsh web` 稳定、5 项行为与会话持久化全部通过。上游 dsh 目前**没有稳定版**（latest 仍是
-> `0.2.1-rc.5`），所以本仓也先以 pre-release 分发。
+> `dsh web` 稳定、5 项行为与会话持久化全部通过。最新 `tdsh.4` 增加 `.deb` 单文件包；
+> 上游 dsh 仍**没有稳定版**（latest 仍是 `0.2.1-rc.5`），所以本仓先以 pre-release 分发。
 
 ## 这是什么
 
@@ -141,7 +141,7 @@ npm uninstall -g dsh-termux
 
 - `dev`：开发分支。
 - `main`：默认分支 / 发布分支（2026-10-31 起）；正式版从这里出。
-- `main` 只随已验证版本推进；`dev` 可以领先（当前 T7 自检待真机验证）。最新 Release 仍是 **pre-release**。
+- `main` 只随已验证版本推进；`dev` 可以领先（当前 `.deb` 安装待真机复验）。最新 Release 仍是 **pre-release**。
 - 正式 Release 等上游 `@deepseek-ai/dsh` 发布稳定版后再切；版本规则
   `<upstream>-tdsh.<rev>`，上游 rc 阶段不冒充稳定版。
 

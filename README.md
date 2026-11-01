@@ -66,6 +66,8 @@ dsh-termux-verify
 
 详见 [`INSTALL.md`](INSTALL.md#11-单文件-deb可选)。
 
+> **deb 安装 ≠ L2 补丁就位**：包内 `client.js` 是 pristine；若装了 dsh-compat，安装/重装后需重跑 `patch.mjs --apply`。
+
 ```bash
 TDSH_RELEASE_BASE=https://github.com/Starsky16/termux-dsh/releases/download/v0.2.1-rc.5-tdsh.3 \
   bash bootstrap.sh

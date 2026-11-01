@@ -23,7 +23,8 @@
 
 - CI dry-run `41263482295`：tarball + `.deb` + `verify-deb.sh` 全 PASS；发布 `41263800744`。
 - `.deb` 38,972,226 B，sha256 `5eeab825…`；tarball 121,726,911 B，sha256 `ed976c79…`。
-- `.deb` 的 Termux 安装/卸载尚待真机复验。
+- `.deb` Termux 安装/重装/卸载真机通过；`dsh-termux-verify` 12/12 PASS。
+- 注意：deb 内 `client.js` 为 pristine，若装 dsh-compat 需在装/重装后重跑 `patch.mjs --apply`。
 
 ## [0.2.1-rc.5-tdsh.3] — 2026-10-31
 

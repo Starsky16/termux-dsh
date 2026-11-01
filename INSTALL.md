@@ -38,6 +38,8 @@ npm uninstall -g dsh-termux 2>/dev/null || true
 pkg install ./dsh-termux_<version>_aarch64.deb
 ```
 
+重装（幂等验证）请用 `pkg install --reinstall ./dsh-termux_<version>_aarch64.deb`。
+
 包内包含完整运行时（`$PREFIX/lib/node_modules/dsh-termux`）、`$PREFIX/bin/dsh`
 启动器、`$PREFIX/bin/dsh-termux-setup` 和 profile/补丁脚本。`postinst` 会尽力执行：
 
@@ -61,7 +63,18 @@ dpkg -r dsh-termux
 # postrm 只删除本项目创建的 ~/bin/dsh；~/.dsh 与 .zshenv 保留
 ```
 
-注意：`.deb` 依赖 `nodejs-lts (>= 24.2)`、`ripgrep`、`coreutils`、`patch`；
+**L2 补丁会被覆盖：** `.deb` 内是运行时树，`@deepseek-ai/dsh-client-modules/lib/client.js`
+是 **pristine**；如果装了 `dsh-compat`，安装/重装/卸载后必须重打 L2：
+
+```bash
+NM="$PREFIX/lib/node_modules/dsh-termux/node_modules"
+node ~/code/dsh-compat/bin/patch.mjs --apply --node-modules "$NM"
+```
+
+T7B 的 `~/bin/dsh` selfcheck 会在缺失时告警，但不会自动重打。重装验证请用
+`pkg install --reinstall ./dsh-termux_...deb`；启动日志写到 `"$TMPDIR/..."`，不要用 `/tmp`。
+
+注意：`.deb` 依赖 `bash`、`nodejs-lts (>= 24.2)`、`ripgrep`、`coreutils`、`patch`；
 原生件按当前 Node ABI（137）编译，Node 大版本升级后需重新出包。
 
 ## 2. 分步等价操作（排查时用）

@@ -129,7 +129,7 @@ npm uninstall -g dsh-termux
 
 - `dev`：开发分支。
 - `main`：默认分支 / 发布分支（2026-10-31 起）；正式版从这里出。
-- 当前两个分支同提交；最新 Release 仍是 **pre-release**。
+- `main` 只随已验证版本推进；`dev` 可以领先（当前 T7 自检待真机验证）。最新 Release 仍是 **pre-release**。
 - 正式 Release 等上游 `@deepseek-ai/dsh` 发布稳定版后再切；版本规则
   `<upstream>-tdsh.<rev>`，上游 rc 阶段不冒充稳定版。
 

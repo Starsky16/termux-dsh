@@ -103,8 +103,9 @@ bash ~/code/termux-dsh/profile/setup-selfcheck.sh
 sed -i '/^# >>> termux-dsh selfcheck >>>$/,/^# <<< termux-dsh selfcheck <<<$/d' ~/.zshenv
 ```
 
-注意：只覆盖交互 shell 里的 `dsh` 调用；`command dsh`、绝对路径
-`$PREFIX/bin/dsh`、桌面快捷方式不经过这个函数。升级 `dsh-termux` 后若看到
+注意：只覆盖交互 shell 里**直接执行**的 `dsh`；`command dsh`、绝对路径、桌面快捷方式，
+以及 `setsid` / `nohup` / `env` / `sh -c` 等外部命令都会绕过这个函数——日常
+`setsid nohup dsh web` 也覆盖不到。升级 `dsh-termux` 后若看到
 “L2 补丁未就绪”，需手动用 `dsh-compat` 的 `patch.mjs --apply` 重打。
 
 ## 升级与回滚

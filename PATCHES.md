@@ -148,7 +148,9 @@ boot 一次；`--version` / `--help` / `--dump-config` 不触发 host preparatio
 若 `~/code/dsh-compat/bin/selfcheck.mjs` 存在，则按全局树校验 L2 补丁；
 未打 / 漂移 / 目标缺失只写 stderr 告警，**退出码仍为 0，不自动重打、不阻塞启动**。
 
-- 只覆盖交互 shell 的 `dsh`；`command dsh`、绝对路径、非 shell 进程不经过。
+- 只覆盖交互 shell 里**直接执行**的 `dsh`；`command dsh`、绝对路径、非 shell 进程，
+  以及 `setsid` / `nohup` / `env` / `sh -c` 等外部命令都会绕过。日常
+  `setsid nohup dsh web` 不经过这个函数，这是方案 A 的已知边界。
 - 未安装 `dsh-compat` 时完全跳过，不成为新依赖。
 - 回退：删除整个 `# >>> termux-dsh selfcheck >>>` 块后重开 shell。
 - 升级 `dsh-termux` 会覆盖全局树补丁；看到告警后用 `dsh-compat` 的

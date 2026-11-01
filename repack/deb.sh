@@ -71,7 +71,7 @@ Package: dsh-termux
 Version: $VER
 Architecture: $ARCH
 Maintainer: Starsky16 <Starsky16@users.noreply.github.com>
-Depends: bash, nodejs-lts (>= 24.2), ripgrep, coreutils, patch
+Depends: bash, nodejs-lts (>= 24.2), ripgrep, coreutils, patch, pnpm
 Section: utils
 Priority: optional
 Installed-Size: $(du -sk "$DEBROOT" | awk '{print $1}')

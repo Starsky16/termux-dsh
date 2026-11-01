@@ -74,14 +74,14 @@ node ~/code/dsh-compat/bin/patch.mjs --apply --node-modules "$NM"
 T7B 的 `~/bin/dsh` selfcheck 会在缺失时告警，但不会自动重打。重装验证请用
 `pkg install --reinstall ./dsh-termux_...deb`；启动日志写到 `"$TMPDIR/..."`，不要用 `/tmp`。
 
-注意：`.deb` 依赖 `bash`、`nodejs-lts (>= 24.2)`、`ripgrep`、`coreutils`、`patch`；
+注意：`.deb` 依赖 `bash`、`nodejs-lts (>= 24.2)`、`ripgrep`、`coreutils`、`patch`、`pnpm`（市场页与 `dsh plugin add` 装插件走 `pnpm add`，必须依赖）；
 原生件按当前 Node ABI（137）编译，Node 大版本升级后需重新出包。
 
 ## 2. 分步等价操作（排查时用）
 
 ```bash
 # 1) 依赖
-pkg install -y nodejs-lts python git curl ripgrep patch
+pkg install -y nodejs-lts python git curl ripgrep patch pnpm
 
 # 2) 下载 Release 重组包（public 仓库，无需 token）
 # rc 是 pre-release，/releases/latest 不包含它；先取最新 tag。

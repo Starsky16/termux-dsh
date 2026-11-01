@@ -88,25 +88,27 @@ web-fetch / HMR 配置、技能与 hooks 接线。以下项目需要启动 `dsh 
 
 ## 启动自检（L2 补丁）
 
-`bootstrap.sh` 会在 `~/.zshenv` 写入一个独立的 `dsh()` 函数（标记块
-`# >>> termux-dsh selfcheck >>>`）：如果 `~/code/dsh-compat/bin/selfcheck.mjs`
-存在，就在每次交互式 `dsh` 调用前校验全局树里的 L2 补丁；缺失/漂移只向 stderr
-告警，**不阻塞、不自动修复**。未安装 `dsh-compat` 时完全跳过。
+`bootstrap.sh` 会安装 `~/bin/dsh` wrapper（`~/bin` 在 PATH 前置）。wrapper 在启动前
+调用 `~/code/dsh-compat/bin/selfcheck.mjs` 校验全局树里的 L2 补丁；缺失/漂移只向
+stderr 告警，**不阻塞、不自动修复**。未安装 `dsh-compat` 时完全跳过。
 
-写入后重开 shell（或 `exec zsh -l`）生效；`bootstrap.sh` 当前 shell 不会自动加载这个函数。
+由于是 PATH 层 wrapper，`setsid` / `nohup` / `env` / `sh -c` 以及日常
+`setsid nohup dsh web` 都会经过自检；`command dsh` 也会。只有直接执行绝对路径
+`$PREFIX/bin/dsh` 才绕过。`~/bin/dsh` 不会被 `npm i -g` 覆盖，升级后仍有效；
+重跑 `bootstrap.sh` 或下面的脚本可修复/重写。
+
+新 shell（或 `source ~/.zshenv`）后 `~/bin` 进入 PATH 才生效；`bootstrap.sh` 当前 shell 不会自动改 PATH。
 
 ```bash
-# 单独重写（幂等）
+# 单独安装/重写（幂等；会移除旧 .zshenv 自检块并备份）
 bash ~/code/termux-dsh/profile/setup-selfcheck.sh
 
-# 回退：删除整个标记块后重开 shell
-sed -i '/^# >>> termux-dsh selfcheck >>>$/,/^# <<< termux-dsh selfcheck <<<$/d' ~/.zshenv
+# 回退：删除 wrapper；旧 .zshenv 块若需要可从 .bak-selfcheck-* 恢复
+rm -f ~/bin/dsh
 ```
 
-注意：只覆盖交互 shell 里**直接执行**的 `dsh`；`command dsh`、绝对路径、桌面快捷方式，
-以及 `setsid` / `nohup` / `env` / `sh -c` 等外部命令都会绕过这个函数——日常
-`setsid nohup dsh web` 也覆盖不到。升级 `dsh-termux` 后若看到
-“L2 补丁未就绪”，需手动用 `dsh-compat` 的 `patch.mjs --apply` 重打。
+升级 `dsh-termux` 后若看到“L2 补丁未就绪”，需手动用 `dsh-compat` 的
+`patch.mjs --apply` 重打。
 
 ## 升级与回滚
 

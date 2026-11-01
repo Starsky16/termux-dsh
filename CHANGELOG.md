@@ -11,9 +11,10 @@
 
 ### Added
 
-- T7 启动自检：`profile/setup-selfcheck.sh` 在 `~/.zshenv` 写入独立的 `dsh()` 包装，
-  调用 `dsh-compat` 的 `selfcheck.mjs` 检查 L2 补丁；只告警，不阻塞、不自动修复。
-  `bootstrap.sh` 在 `setup-env.sh` 后幂等接线；未安装 dsh-compat 时自动跳过。
+- T7 启动自检：`profile/setup-selfcheck.sh` 安装 `~/bin/dsh` wrapper，调用
+  `dsh-compat` 的 `selfcheck.mjs` 检查 L2 补丁；只告警，不阻塞、不自动修复。
+  覆盖 `setsid`/`nohup`/`env`/`sh -c` 等 PATH 启动；未安装 dsh-compat 时自动跳过。
+  `bootstrap.sh` 在 `setup-env.sh` 后幂等接线，并迁移掉旧 `.zshenv` 函数块。
 
 ## [0.2.1-rc.5-tdsh.3] — 2026-10-31
 

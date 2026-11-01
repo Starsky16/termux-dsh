@@ -143,18 +143,19 @@ boot 一次；`--version` / `--help` / `--dump-config` 不触发 host preparatio
 
 ## 启动自检（T7，非补丁）
 
-`profile/setup-selfcheck.sh` 在 `~/.zshenv` 追加独立标记块
-`# >>> termux-dsh selfcheck >>>`，定义 `dsh()` 函数：每次交互式调用 `dsh` 前，
-若 `~/code/dsh-compat/bin/selfcheck.mjs` 存在，则按全局树校验 L2 补丁；
-未打 / 漂移 / 目标缺失只写 stderr 告警，**退出码仍为 0，不自动重打、不阻塞启动**。
+`profile/setup-selfcheck.sh` 安装 `~/bin/dsh` wrapper（`~/bin` 在 PATH 前置）。
+wrapper 先调用 `~/code/dsh-compat/bin/selfcheck.mjs` 校验全局树 L2 补丁，再 exec
+真实 `$PREFIX/bin/dsh`；未打 / 漂移 / 目标缺失只写 stderr 告警，
+**退出码仍为 0，不自动重打、不阻塞启动**。
 
-- 只覆盖交互 shell 里**直接执行**的 `dsh`；`command dsh`、绝对路径、非 shell 进程，
-  以及 `setsid` / `nohup` / `env` / `sh -c` 等外部命令都会绕过。日常
-  `setsid nohup dsh web` 不经过这个函数，这是方案 A 的已知边界。
+- 覆盖 PATH 启动：`setsid` / `nohup` / `env` / `sh -c` / `command dsh` 都经过；
+  只有直接执行绝对路径 `$PREFIX/bin/dsh` 才绕过。
+- `~/bin/dsh` 不会被 `npm i -g dsh-termux` 覆盖；升级后仍有效，重跑
+  `setup-selfcheck.sh` 可重写。
+- 脚本会移除旧 `.zshenv` 的 `dsh()` 函数块（先备份 `.bak-selfcheck-*`），避免自检跑两次。
 - 未安装 `dsh-compat` 时完全跳过，不成为新依赖。
-- 回退：删除整个 `# >>> termux-dsh selfcheck >>>` 块后重开 shell。
-- 升级 `dsh-termux` 会覆盖全局树补丁；看到告警后用 `dsh-compat` 的
-  `patch.mjs --apply` 重打，而不是改本仓。
+- 回退：`rm -f ~/bin/dsh`；需要旧函数时从 `.zshenv.bak-selfcheck-*` 恢复。
 
 验证步骤与判据见
-`workflow-sync/handoff/20261101-dsh-compat-T7接线-termux-dsh.md`。
+`workflow-sync/handoff/20261101-dsh-compat-T7接线-termux-dsh.md` 与
+`workflow-sync/handoff/20261101-termux-dsh-T7B-wrapper.md`（B 方案真机）。

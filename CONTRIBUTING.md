@@ -3,11 +3,72 @@
 本仓只维护 **dsh 本体（含官方依赖）在 Termux/Android arm64** 的重组与补丁。
 第三方插件的适配、修复、隔离、安装不在范围内（归 `dsh-compat` 或插件作者）。
 
-## 分支
+## 分支与发布口径
 
-- `dev`：开发。
-- `main`：默认/发布分支；正式 Release 从这里出。
-- 小改动可以直接在 `dev` 提交；大改动先开分支，合并回 `dev` 后再快进 `main`。
+- `dev`：开发分支。
+- `main`：默认分支 / 发布分支（2026-10-31 起）；正式版从这里出。
+- `main` 只随已验证版本推进；`dev` 可以领先。当前 Release 仍是 pre-release：
+  上游 `@deepseek-ai/dsh` 尚无稳定版（latest = `0.2.1-rc.5`），版本规则
+  `<upstream>-tdsh.<rev>`，上游 rc 阶段不冒充稳定版。
+- 发版不变式：**dev = main = tag = 构建源**。`gh release create` 不带 `--target` 时
+  tag 会落在创建那一刻的 main HEAD 而非 run 的 checkout SHA——发布后核对
+  `git ls-remote` 的 tag 指向，必要时 `gh api -X PATCH .../git/refs/tags/<tag>
+  -f sha=<构建源> -F force=true` 修正；根治可给工作流的 release 步骤加
+  `--target "$GITHUB_SHA"`。
+
+## 仓库结构
+
+```
+bootstrap.sh                 一条命令：依赖 → Release → 安装 → env → 覆盖 → 接线 → verify
+verify.sh                    真机回归（bash 可测项）
+lib/common.sh                日志 / 断言 / sha256 / 幂等下载
+patches/
+├─ manifest.json             每个 target：包名、包内路径、pristine/patched sha256
+├─ apply.sh                  --check / --apply / --revert，只打 profile 树
+├─ core/*.patch              A 类宿主补丁（7 target / 8 文件）
+└─ platform/*.patch          B 类移植层补丁（koffi / node-pty / session / require-builtin）
+repack/
+├─ repack.sh                 本地与 CI 共用：npm 基座 → 补丁 → 平台件 → 原生 → tar → 校验
+├─ native/{koffi,node-pty,require-builtin}.sh
+├─ deb.sh / verify-deb.sh    可选 Termux .deb 组装与校验
+├─ platforms.sh              esbuild / sharp 平台件
+└─ verify-package.sh         架构 / 必需文件 / 版本 / 补丁 / libc++ 断言
+profile/                     dsh 服务配置覆盖与 Termux 环境块（幂等，不含插件安装）
+wiring/link-workspace.sh     两槽记忆 / 技能 / hooks / bin / plans 接线
+docs/                        verify-checklist 与架构说明
+.github/workflows/repack.yml 手动 dispatch 的 CI repack
+```
+
+构建流程的分步说明见 [`docs/architecture.md`](docs/architecture.md)；
+补丁动机与重生成见 [`PATCHES.md`](PATCHES.md)。
+
+## 启动自检 wrapper（L2 补丁）
+
+`profile/setup-selfcheck.sh`（bootstrap 自动调用）安装 `~/bin/dsh` wrapper
+（`~/bin` 在 PATH 前置）：先调用 `~/code/dsh-compat/bin/selfcheck.mjs` 校验
+profile 树的 L2 补丁，再 `exec` 真实 `$PREFIX/bin/dsh`。缺失/漂移只向 stderr
+告警，**不阻塞、不自动修复**；未安装 `dsh-compat` 时完全跳过。
+
+覆盖面：PATH 层 wrapper，直接执行、`setsid` / `nohup` / `env` / `sh -c` 全部经过；
+只有绝对路径 `$PREFIX/bin/dsh` 或不含 `~/bin` 的干净 PATH 绕过（已文档化）。
+`~/bin/dsh` 不会被 `npm i -g` 覆盖，升级后仍有效；重跑 `bootstrap.sh` 或
+`profile/setup-selfcheck.sh` 可修复/重写（幂等，会移除旧 `.zshenv` 自检块并备份）。
+
+```bash
+# 单独安装/重写（幂等）
+bash ~/code/termux-dsh/profile/setup-selfcheck.sh
+
+# 回退：删除 wrapper；旧 .zshenv 块若需要可从 .bak-selfcheck-* 恢复
+rm -f ~/bin/dsh
+```
+
+注意：**deb 包内的 `@deepseek-ai/*` 是 pristine**，装/重装会冲掉 dsh-compat 的
+L2 补丁——postinst 会 best-effort 自动重打，失败时手工：
+
+```bash
+node ~/code/dsh-compat/bin/patch.mjs --apply \
+  --node-modules "$PREFIX/lib/node_modules/dsh-termux/node_modules"
+```
 
 ## 本地检查
 
@@ -28,7 +89,7 @@ mkdir -p /tmp/tdsh-empty/profiles/web
 DSH_HOME=/tmp/tdsh-empty bash patches/apply.sh --check
 ```
 
-涉及原生产物时，不要只在 WIN 上相信 `bash -n`：
+涉及原生产物时，不要只在本地相信 `bash -n`：
 
 - 先用 CI `workflow_dispatch` + `dry_run=true` 跑一遍；
 - 检查 `verify-package.sh` 的 ARM / libc++ / patch 断言；
@@ -44,16 +105,21 @@ DSH_HOME=/tmp/tdsh-empty bash patches/apply.sh --check
 ## Release 流程
 
 1. 在 `main` 上确认 `dev` 已合并、CI `dry_run=true` 全绿。
-2. 需要新版时 dispatch：
-   - `upstream_version`：留空 = latest，或指定 npm 版本；
+2. 需要新版时 dispatch（**用 `gh workflow run`，不要用 `gh api .../dispatches`
+   平铺参数——inputs 必须嵌套在 `inputs` 键下，平铺会报 422 "not permitted keys"**）：
+   - `upstream_version`：留空 = latest；建议显式锁定已验证版本（如 `0.2.1-rc.5`）；
    - `rev`：同一上游版本的修订号；
    - `dry_run=false`。
-3. 正式 Release 只在上游稳定版发布后做。当前 workflow 的 `gh release create` 硬编码
+3. 发布后核对：附件齐全（tarball + deb + 两份 sha256）且与 `.size`/sha256 对齐、
+   prerelease 标记、tag 指向构建源（见「分支与发布口径」），然后真机重装
+   （版本号回落时需 `apt install --reinstall --allow-downgrades`）并跑
+   `dsh-termux-verify`。
+4. 正式 Release 只在上游稳定版发布后做。当前 workflow 的 `gh release create` 硬编码
    `--prerelease`；正式发版前要加 `prerelease` 开关，并确认 `main` 的默认分支设置。
-4. 发布后核对 asset 大小 / sha256，并在 Termux 上重跑 bootstrap + verify。
 
 ## 报告问题
 
-请附：设备/Android/Termux 版本、`dsh --version`、`bash verify.sh` 输出、
-复现步骤与完整报错。不要粘贴 token、cookie、API key 或完整 profile 配置。
+请附：设备/Android/Termux 版本、`dsh --version`、`bash verify.sh`（或 deb 装法的
+`dsh-termux-verify`）输出、复现步骤与完整报错。不要粘贴 token、cookie、API key
+或完整 profile 配置。
 安全问题见 [`SECURITY.md`](SECURITY.md)。

@@ -65,6 +65,7 @@ chmod 755 "$BIN/dsh-termux-verify"
 
 DEBIAN="$DEBROOT/DEBIAN"
 mkdir -p "$DEBIAN"
+chmod 755 "$DEBROOT" "$DEBIAN"
 cat >"$DEBIAN/control" <<EOF
 Package: dsh-termux
 Version: $VER
@@ -91,6 +92,14 @@ if [ -n "${HOME:-}" ] && [ -d "$SHARE/profile" ]; then
   bash "$SHARE/profile/setup-env.sh" || echo "dsh-termux: setup-env failed (rerun dsh-termux-setup)" >&2
   bash "$SHARE/profile/apply-overrides.sh" || echo "dsh-termux: apply-overrides failed (rerun dsh-termux-setup)" >&2
   bash "$SHARE/profile/setup-selfcheck.sh" || echo "dsh-termux: selfcheck setup skipped" >&2
+fi
+# deb 内的 @deepseek-ai/* 是 pristine：装/升级会冲掉 dsh-compat 的 L2 补丁。
+# 若 dsh-compat 已 clone 就 best-effort 重打；失败只告警（后续由 ~/bin/dsh
+# wrapper 的启动自检兜底提示），绝不阻塞 dpkg。
+if [ -n "${HOME:-}" ] && [ -f "$HOME/code/dsh-compat/bin/patch.mjs" ]; then
+  NM="$PREFIX/lib/node_modules/dsh-termux/node_modules"
+  node "$HOME/code/dsh-compat/bin/patch.mjs" --apply --node-modules "$NM" \
+    || echo "dsh-termux: L2 repatch failed (run: node ~/code/dsh-compat/bin/patch.mjs --apply --node-modules $NM)" >&2
 fi
 echo "dsh-termux installed. Start with: dsh web"
 exit 0

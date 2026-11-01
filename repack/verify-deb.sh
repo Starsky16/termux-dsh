@@ -34,8 +34,11 @@ check_file "$RUNTIME/package.json" "runtime package.json"
 check_file "$RUNTIME/lib/bin.js" "runtime bin.js"
 check_exec "$TMP$PREFIX/bin/dsh" "dsh launcher"
 check_exec "$TMP$PREFIX/bin/dsh-termux-setup" "dsh-termux-setup"
+check_exec "$TMP$PREFIX/bin/dsh-termux-verify" "dsh-termux-verify"
 check_file "$TMP$PREFIX/share/dsh-termux/profile/setup-selfcheck.sh" "setup-selfcheck"
 check_file "$TMP$PREFIX/share/dsh-termux/patches/manifest.json" "patches manifest"
+check_file "$TMP$PREFIX/share/dsh-termux/verify.sh" "verify.sh"
+check_file "$TMP$PREFIX/share/dsh-termux/docs/verify-checklist.md" "verify checklist"
 
 if [[ -f "$RUNTIME/package.json" ]]; then
   GOT_RUNTIME_VER="$(node -e 'process.stdout.write(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).version)' "$RUNTIME/package.json")"

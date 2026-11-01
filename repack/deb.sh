@@ -43,7 +43,7 @@ chmod 755 "$BIN/dsh"
 
 SHARE="$DEBROOT$PREFIX/share/dsh-termux"
 mkdir -p "$SHARE"
-cp -a "$ROOT/lib" "$ROOT/profile" "$ROOT/patches" "$SHARE/"
+cp -a "$ROOT/lib" "$ROOT/profile" "$ROOT/patches" "$ROOT/docs" "$ROOT/verify.sh" "$SHARE/"
 
 cat >"$BIN/dsh-termux-setup" <<EOF
 #!/data/data/com.termux/files/usr/bin/bash
@@ -55,6 +55,13 @@ for s in setup-env apply-overrides setup-selfcheck; do
 done
 EOF
 chmod 755 "$BIN/dsh-termux-setup"
+
+cat >"$BIN/dsh-termux-verify" <<EOF
+#!/data/data/com.termux/files/usr/bin/bash
+# Run the same verify.sh that bootstrap uses (package runtime tree).
+exec bash "$PREFIX/share/dsh-termux/verify.sh"
+EOF
+chmod 755 "$BIN/dsh-termux-verify"
 
 DEBIAN="$DEBROOT/DEBIAN"
 mkdir -p "$DEBIAN"

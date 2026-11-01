@@ -51,6 +51,7 @@ pkg install ./dsh-termux_<version>_aarch64.deb
 dsh-termux-setup
 exec zsh -l
 dsh --version
+dsh-termux-verify
 ```
 
 卸载：

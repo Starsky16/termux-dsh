@@ -61,6 +61,7 @@ Release 同时附带 `.deb`；想跳过 npm/git 安装时可直接：
 
 ```bash
 pkg install ./dsh-termux_<version>_aarch64.deb
+dsh-termux-verify
 ```
 
 详见 [`INSTALL.md`](INSTALL.md#11-单文件-deb可选)。

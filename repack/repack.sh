@@ -143,7 +143,7 @@ if [[ -d "$KOFFI/build" ]]; then
 fi
 
 # 5) Assemble the package: dsh root + every dependency except @deepseek-ai/dsh.
-info "[5/6] 组装包"
+info "[5/7] 组装包"
 mkdir -p "$PKGDIR"
 cp -a "$BUILD/node_modules/@deepseek-ai/dsh/." "$PKGDIR/"
 mkdir -p "$PKGDIR/node_modules/@deepseek-ai"
@@ -240,10 +240,21 @@ cat > "$DIST/release-notes.md" <<EOF
 EOF
 
 # 6) Hard verification.
-info "[6/6] 校验产物"
+info "[6/7] 校验产物"
 bash "$HERE/verify-package.sh" "$DIST/dsh-termux.tgz" "$VER"
+
+info "[7/7] Termux .deb"
+if have dpkg-deb; then
+  bash "$HERE/deb.sh" "$PKGDIR" "$DIST" "$VER" "$ROOT"
+  bash "$HERE/verify-deb.sh" "$DIST/dsh-termux_${VER}_aarch64.deb" "$VER"
+else
+  warn "缺 dpkg-deb，跳过 .deb（CI runner 会生成）"
+fi
 
 echo
 info "完成：$DIST/dsh-termux.tgz ($(du -h "$DIST/dsh-termux.tgz" | cut -f1))"
+if [[ -f "$DIST/dsh-termux_${VER}_aarch64.deb" ]]; then
+  info "      $DIST/dsh-termux_${VER}_aarch64.deb ($(du -h "$DIST/dsh-termux_${VER}_aarch64.deb" | cut -f1))"
+fi
 [[ "$DRY_RUN" == "1" ]] && info "dry-run：不发布"
 exit 0

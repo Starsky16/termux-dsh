@@ -18,7 +18,8 @@
 5. 清理 host 平台预编译件，组装 `dsh-termux` 包；
 6. `tar | gzip` 生成 asset，`repack/verify-package.sh` 做架构、文件、版本、补丁、
    `libc++_shared` 断言；
-7. `dry_run=false` 时 `gh release create --prerelease`。
+7. 可选：`repack/deb.sh` 把同一运行时树组装成 Termux `.deb`（含 launcher、profile 脚本与 `dsh-termux-setup`），`verify-deb.sh` 校验；
+8. `dry_run=false` 时 `gh release create --prerelease`，上传 tarball 与 `.deb`。
 
 ## 2. 运行时层（profile 树）
 

@@ -11,6 +11,10 @@
 
 ### Added
 
+- 可选 Termux `.deb`：`repack/deb.sh` 把同一运行时树组装成
+  `dsh-termux_<version>_aarch64.deb`，含 `$PREFIX/bin/dsh`、profile 初始化与
+  `dsh-termux-setup`；CI 同时上传 tarball 与 `.deb`。
+
 - T7 启动自检：`profile/setup-selfcheck.sh` 安装 `~/bin/dsh` wrapper，调用
   `dsh-compat` 的 `selfcheck.mjs` 检查 L2 补丁；只告警，不阻塞、不自动修复。
   覆盖 `setsid`/`nohup`/`env`/`sh -c` 等 PATH 启动；未安装 dsh-compat 时自动跳过。

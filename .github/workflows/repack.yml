@@ -65,6 +65,8 @@ jobs:
           path: |
             dist/dsh-termux.tgz
             dist/dsh-termux.tgz.sha256
+            dist/*.deb
+            dist/dsh-termux.deb.sha256
             dist/version.txt
             dist/release-notes.md
 
@@ -76,5 +78,6 @@ jobs:
           V=$(cat dist/version.txt)
           gh release delete "v$V" --yes --cleanup-tag || true
           gh release create "v$V" dist/dsh-termux.tgz dist/dsh-termux.tgz.sha256 \
+            dist/*.deb dist/dsh-termux.deb.sha256 \
             --title "dsh $V (Termux arm64)" --prerelease \
             --notes-file dist/release-notes.md

@@ -27,6 +27,42 @@ bash ~/code/termux-dsh/bootstrap.sh
 dsh web
 ```
 
+## 1.1 单文件 .deb（可选）
+
+Release 若附带 `dsh-termux_<version>_aarch64.deb`，可跳过 clone/bootstrap 直接安装：
+
+```bash
+# 如果之前用 npm 装过，先卸掉，避免 $PREFIX/bin/dsh 冲突
+npm uninstall -g dsh-termux 2>/dev/null || true
+
+pkg install ./dsh-termux_<version>_aarch64.deb
+```
+
+包内包含完整运行时（`$PREFIX/lib/node_modules/dsh-termux`）、`$PREFIX/bin/dsh`
+启动器、`$PREFIX/bin/dsh-termux-setup` 和 profile/补丁脚本。`postinst` 会尽力执行：
+
+- `setup-env.sh`（`.zshenv` 环境块）
+- `apply-overrides.sh`（sandbox / approval / web-fetch / HMR）
+- `setup-selfcheck.sh`（`~/bin/dsh` wrapper）
+
+需要重跑时：
+
+```bash
+dsh-termux-setup
+exec zsh -l
+dsh --version
+```
+
+卸载：
+
+```bash
+dpkg -r dsh-termux
+# postrm 只删除本项目创建的 ~/bin/dsh；~/.dsh 与 .zshenv 保留
+```
+
+注意：`.deb` 依赖 `nodejs-lts (>= 24.2)`、`ripgrep`、`coreutils`、`patch`；
+原生件按当前 Node ABI（137）编译，Node 大版本升级后需重新出包。
+
 ## 2. 分步等价操作（排查时用）
 
 ```bash

@@ -57,6 +57,14 @@ bash bootstrap.sh
 `bootstrap.sh` 会通过 GitHub API 解析**最新 tag**（因为 Release 是 pre-release，
 `/releases/latest` 不包含它），然后自动完成安装与回归。也可以显式指定：
 
+Release 同时附带 `.deb`；想跳过 npm/git 安装时可直接：
+
+```bash
+pkg install ./dsh-termux_<version>_aarch64.deb
+```
+
+详见 [`INSTALL.md`](INSTALL.md#11-单文件-deb可选)。
+
 ```bash
 TDSH_RELEASE_BASE=https://github.com/Starsky16/termux-dsh/releases/download/v0.2.1-rc.5-tdsh.3 \
   bash bootstrap.sh
@@ -150,6 +158,7 @@ patches/
 repack/
 ├─ repack.sh                 本地与 CI 共用：npm 基座 → 补丁 → 平台件 → 原生 → tar → 校验
 ├─ native/{koffi,node-pty,require-builtin}.sh
+├─ deb.sh / verify-deb.sh    可选 Termux .deb 组装与校验
 ├─ platforms.sh              esbuild / sharp 平台件
 └─ verify-package.sh         架构 / 必需文件 / 版本 / 补丁 / libc++ 断言
 profile/                     dsh 服务配置覆盖与 Termux 环境块（幂等，不含插件安装）
@@ -169,7 +178,7 @@ docs/                        verify-checklist 与架构说明
 
 ## 文档
 
-- [`INSTALL.md`](INSTALL.md)：分步安装、验证、升级、故障排查
+- [`INSTALL.md`](INSTALL.md)：分步安装、.deb 安装、验证、升级、故障排查
 - [`PATCHES.md`](PATCHES.md)：A/B 补丁原理、基线版本、重生成方法
 - [`docs/architecture.md`](docs/architecture.md)：分发 / 运行时 / 接线三层与 CI 流程
 - [`docs/verify-checklist.md`](docs/verify-checklist.md)：会话内行为检查

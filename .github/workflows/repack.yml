@@ -19,6 +19,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 concurrency:
   group: repack-termux
@@ -106,3 +107,21 @@ jobs:
               --target "$GITHUB_SHA" \
               --notes-file dist/release-notes.md
           fi
+
+      - name: Build npm package
+        run: |
+          node npm/make-package.mjs dist/npm "$(cat dist/version.txt)"
+          ( cd dist/npm && npm pack --dry-run >/dev/null )
+          du -sh dist/npm
+
+      - name: Publish to npm
+        # Trusted Publishing（OIDC）：配置好 npm 包的可信发布者后把仓库变量置 true。
+        if: ${{ inputs.dry_run != true && vars.NPM_PUBLISH_ENABLED == 'true' }}
+        env:
+          NPM_CONFIG_PROVENANCE: "true"
+        run: |
+          npm install -g npm@latest >/dev/null 2>&1 || true
+          echo "npm $(npm --version)"
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then TAG=latest; else TAG=next; fi
+          npm publish dist/npm --tag "$TAG" --provenance
+          echo "published termux-dsh@$(cat dist/version.txt) (tag=$TAG)"

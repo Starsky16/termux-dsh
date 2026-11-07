@@ -76,8 +76,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           V=$(cat dist/version.txt)
+          # 正式 Release（不标 prerelease）：本仓 main 的构建即 Latest。
+          # --target 固定 tag 到本次 run 的 commit，避免落在创建那一刻的 main HEAD。
           gh release delete "v$V" --yes --cleanup-tag || true
           gh release create "v$V" dist/dsh-termux.tgz dist/dsh-termux.tgz.sha256 \
             dist/*.deb dist/dsh-termux.deb.sha256 \
-            --title "dsh $V (Termux arm64)" --prerelease \
+            --title "dsh $V (Termux arm64)" \
+            --target "$GITHUB_SHA" \
             --notes-file dist/release-notes.md

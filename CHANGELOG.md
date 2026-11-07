@@ -6,8 +6,9 @@
 ## Unreleased
 
 - 等 `@deepseek-ai/dsh` 发布稳定版后，从 `main` 发 `0.2.1-tdsh.1`（或对应上游版本）。
-- 发布前给 `.github/workflows/repack.yml` 增加 `prerelease` 开关（当前 `gh release create`
-  硬编码 `--prerelease`），并在 Termux 回归通过后标记 Latest。
+- 2026-11-07 起：本仓 `main` 的构建直接作为正式 Release（Latest）发布，
+  `gh release create` 已去掉 `--prerelease` 并加 `--target "$GITHUB_SHA"`；
+  版本号仍保留上游 `rc` 段。
 
 ## [0.2.2-rc.1-tdsh.1] — 待发布（CI 构建 + 真机验证后回填）
 
@@ -31,6 +32,12 @@
 - 在隔离目录安装 `0.2.2-rc.1`、应用全部 A 类补丁：7 target / 7 文件哈希全匹配；
   B1–B5、B10 `patch --dry-run` 全通过；补丁后文件 `node --check` 通过。
 - 待办：CI 构建（NDK 原生件）与 Termux 真机 `dsh-termux-verify` 全项。
+
+### Release
+
+- 发布策略调整（2026-11-07 拍板）：后续从 `main` 的构建**直接作为正式 Release（Latest）**
+  发布，`gh release create` 去掉 `--prerelease`；同时补上 `--target "$GITHUB_SHA"`，
+  根治 tag 指向漂移。版本号仍保留上游 `rc` 段。
 
 ## [0.2.1-rc.5-tdsh.4] — 2026-11-01
 

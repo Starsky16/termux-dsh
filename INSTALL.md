@@ -84,7 +84,7 @@ T7B 的 `~/bin/dsh` selfcheck 会在缺失时告警，但不会自动重打。�
 pkg install -y nodejs-lts python git curl ripgrep patch pnpm
 
 # 2) 下载 Release 重组包（public 仓库，无需 token）
-# rc 是 pre-release，/releases/latest 不包含它；先取最新 tag。
+# 取最新 Release tag（main 的构建即正式 Release；旧版曾标 pre-release，故按 tag 取更稳）。
 TAG="$(curl -fsSL 'https://api.github.com/repos/Starsky16/termux-dsh/releases?per_page=10' \
   | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
 [ -n "$TAG" ] || { echo "无法解析最新 Release tag"; exit 1; }

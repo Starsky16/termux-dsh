@@ -7,9 +7,9 @@
 
 - `dev`：开发分支。
 - `main`：默认分支 / 发布分支（2026-10-31 起）；正式版从这里出。
-- `main` 只随已验证版本推进；`dev` 可以领先。当前 Release 仍是 pre-release：
-  上游 `@deepseek-ai/dsh` 尚无稳定版（latest = `0.2.2-rc.1`），版本规则
-  `<upstream>-tdsh.<rev>`，上游 rc 阶段不冒充稳定版。
+- `main` 只随已验证版本推进；`dev` 可以领先。上游 `@deepseek-ai/dsh` 尚无稳定版
+  （latest = `0.2.2-rc.1`），版本规则 `<upstream>-tdsh.<rev>`；**本仓 `main` 的构建直接
+  作为正式 Release（Latest）发布**，版本号保留上游 `rc` 段以标明基座，不冒充上游稳定版。
 - 发版不变式：**dev = main = tag = 构建源**。`gh release create` 不带 `--target` 时
   tag 会落在创建那一刻的 main HEAD 而非 run 的 checkout SHA——发布后核对
   `git ls-remote` 的 tag 指向，必要时 `gh api -X PATCH .../git/refs/tags/<tag>
@@ -111,11 +111,11 @@ DSH_HOME=/tmp/tdsh-empty bash patches/apply.sh --check
    - `rev`：同一上游版本的修订号；
    - `dry_run=false`。
 3. 发布后核对：附件齐全（tarball + deb + 两份 sha256）且与 `.size`/sha256 对齐、
-   prerelease 标记、tag 指向构建源（见「分支与发布口径」），然后真机重装
-   （版本号回落时需 `apt install --reinstall --allow-downgrades`）并跑
-   `dsh-termux-verify`。
-4. 正式 Release 只在上游稳定版发布后做。当前 workflow 的 `gh release create` 硬编码
-   `--prerelease`；正式发版前要加 `prerelease` 开关，并确认 `main` 的默认分支设置。
+   非 draft / 非 prerelease（`gh release view --json isLatest,isPrerelease`）、tag 指向
+   构建源（见「分支与发布口径」），然后真机重装（版本号回落时需
+   `apt install --reinstall --allow-downgrades`）并跑 `dsh-termux-verify`。
+4. 发布步骤已内置 `--target "$GITHUB_SHA"` 与正式 Release 标记；改动发布策略时
+   同步更新本节与 `docs/architecture.md`。
 
 ## 报告问题
 

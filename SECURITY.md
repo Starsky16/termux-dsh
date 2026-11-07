@@ -2,7 +2,7 @@
 
 ## 支持范围
 
-当前维护的是最新 Release（当前 `v0.2.1-rc.5-tdsh.5`，pre-release）与 `main` 分支。
+当前维护的是最新 Release（`v0.2.1-rc.5-tdsh.5`，其后版本见 Releases 页）与 `main` 分支。
 更早的 `tdsh.1` / `tdsh.2` 已因原生 addon / libc++ 问题被取代，不再建议使用。
 
 ## 报告漏洞

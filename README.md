@@ -7,7 +7,7 @@
 让 dsh 在 Termux 上开箱即用。构建流程的技术细节见 [`docs/architecture.md`](docs/architecture.md)。
 
 [![Repack](https://github.com/Starsky16/termux-dsh/actions/workflows/repack.yml/badge.svg?branch=main)](https://github.com/Starsky16/termux-dsh/actions/workflows/repack.yml)
-[![Release](https://img.shields.io/github/v/release/Starsky16/termux-dsh?include_prereleases&label=release)](https://github.com/Starsky16/termux-dsh/releases)
+[![Release](https://img.shields.io/github/v/release/Starsky16/termux-dsh?label=release)](https://github.com/Starsky16/termux-dsh/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/platform-Termux%20arm64-informational)
 
@@ -104,7 +104,8 @@ dpkg -r dsh-termux            # 方式二装的（会一并移除 ~/bin/dsh）
 
 ## 已知限制
 
-- 上游最新是 `0.2.2-rc.1`（仍为候选版），所以当前 Release 都是 pre-release；正式版等上游稳定。
+- 上游最新是 `0.2.2-rc.1`（仍为候选版）；本仓 `main` 的构建直接作为**正式 Release（Latest）**发布，
+  版本号保留上游的 `rc` 段以标明基座，不冒充上游稳定版。
 - **HMR（热重载）在 Termux 上禁用**；修改配置/插件后需重启 `dsh web`。
 - 图像处理走 wasm 版 sharp（不是 Android 原生包）；常用读图已在真机验证，
   特殊格式仍可能受 wasm 能力限制。

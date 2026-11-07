@@ -44,7 +44,8 @@ cd ~/code/termux-dsh
 bash bootstrap.sh
 ```
 
-脚本会自动解析最新版本（含 pre-release）、下载校验、安装并做安装后自检。
+脚本会自动解析最新的**正式** Release、下载校验、安装并做安装后自检。
+分支上的 `-dev.<N>` 预发布构建不会被自动选中（需要时用 `TDSH_RELEASE_BASE` 指定）。
 想固定装某个历史版本：
 
 ```bash

@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Verify the optional Termux .deb layout and metadata.
-# Usage: verify-deb.sh <deb> <version> [arch]
+# Usage: verify-deb.sh <deb> <deb-version> [arch] [runtime-version]
+#   deb-version 用 dpkg 口径（dev 构建为 ~dev.N）；runtime-version 缺省同 deb-version。
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/../lib/common.sh"
 
-DEB="${1:?用法：verify-deb.sh <deb> <version> [arch]}"
+DEB="${1:?用法：verify-deb.sh <deb> <version> [arch] [runtime-version]}"
 VER="${2:?}"
+RUNTIME_VER="${4:-$VER}"
 ARCH="${3:-aarch64}"
 [[ -f "$DEB" ]] || die "缺 .deb：$DEB"
 have dpkg-deb || die "缺 dpkg-deb"
@@ -42,7 +44,7 @@ check_file "$TMP$PREFIX/share/dsh-termux/docs/verify-checklist.md" "verify check
 
 if [[ -f "$RUNTIME/package.json" ]]; then
   GOT_RUNTIME_VER="$(node -e 'process.stdout.write(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).version)' "$RUNTIME/package.json")"
-  [[ "$GOT_RUNTIME_VER" == "$VER" ]] && pass "runtime version" || bad "runtime version: $GOT_RUNTIME_VER"
+  [[ "$GOT_RUNTIME_VER" == "$RUNTIME_VER" ]] && pass "runtime version" || bad "runtime version: $GOT_RUNTIME_VER != $RUNTIME_VER"
 fi
 
 check_no_libcxx() {

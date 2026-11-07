@@ -40,9 +40,11 @@
 
 ### Release
 
-- 发布策略调整（2026-11-07 拍板）：后续从 `main` 的构建**直接作为正式 Release（Latest）**
+- 发布策略调整（2026-11-07 拍板）：从 `main` 的构建**直接作为正式 Release（Latest）**
   发布，`gh release create` 去掉 `--prerelease`；同时补上 `--target "$GITHUB_SHA"`，
   根治 tag 指向漂移。版本号仍保留上游 `rc` 段。
+- 两条发布通道：`main` = 正式版；其它分支 = pre-release dev build，版本追加
+  `-dev.<run_number>`，`bootstrap.sh` 自动跳过 dev tag。
 
 ## [0.2.1-rc.5-tdsh.4] — 2026-11-01
 

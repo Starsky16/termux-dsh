@@ -27,6 +27,9 @@ DRY_RUN=0
 
 REV="${REV:-1}"
 [[ "$REV" =~ ^[0-9]+$ ]] || die "REV 必须是正整数：$REV"
+# CI 的 dev 分支构建在此追加 `-dev.<run>`，与 main 的正式版版本号隔离。
+VERSION_SUFFIX="${VERSION_SUFFIX:-}"
+[[ "$VERSION_SUFFIX" =~ ^(-dev\.[0-9]+)?$ ]] || die "VERSION_SUFFIX 只接受空值或 -dev.<数字>：$VERSION_SUFFIX"
 NODE_TARGET_VERSION="${NODE_TARGET_VERSION:-$(node -p 'process.versions.node')}"
 NODE_TARGET_VERSION="${NODE_TARGET_VERSION#v}"
 
@@ -40,7 +43,7 @@ else
   UPSTREAM="${UPSTREAM_ARG#v}"
 fi
 [[ -n "$UPSTREAM" ]] || die "无法解析上游版本"
-VER="${UPSTREAM}-tdsh.${REV}"
+VER="${UPSTREAM}-tdsh.${REV}${VERSION_SUFFIX}"
 info "上游 $UPSTREAM，产物版本 $VER，Node $NODE_TARGET_VERSION"
 
 NDK="${ANDROID_NDK_HOME:-${ANDROID_NDK_ROOT:-}}"
@@ -230,11 +233,11 @@ info "  打包"
 sha256sum "$DIST/dsh-termux.tgz" | awk '{print $1"  dsh-termux.tgz"}' > "$DIST/dsh-termux.tgz.sha256"
 printf '%s\n' "$VER" > "$DIST/version.txt"
 cat > "$DIST/release-notes.md" <<EOF
-# dsh $VER (Termux arm64)
+# dsh $VER (Termux arm64$([ -n "$VERSION_SUFFIX" ] && echo " dev build"))
 
 - 上游：\`@deepseek-ai/dsh@$UPSTREAM\`
 - 原生：koffi（NDK 交叉编译，API 24 / arm64-v8a）、node-pty（Node $NODE_TARGET_VERSION headers）
-- 补丁：A 类宿主 7 target / 8 文件；B1–B11；HMR 通过 profile 覆盖禁用；require-builtin 由 B11 编译
+- 补丁：A 类宿主 6 target / 7 文件；B1–B11；HMR 通过 profile 覆盖禁用；require-builtin 由 B11 编译
 - 非上游官方产物；由 Starsky16/termux-dsh 的 CI 从官方 npm 包重组
 - 安装：\`npm i -g dsh-termux-$VER.tgz\`（或按仓库 README 的 bootstrap）
 EOF
@@ -244,17 +247,20 @@ info "[6/7] 校验产物"
 bash "$HERE/verify-package.sh" "$DIST/dsh-termux.tgz" "$VER"
 
 info "[7/7] Termux .deb"
+# deb 用 dpkg 口径版本：dev 构建的 `-dev.N` 转成 `~dev.N` 才会排在正式版之前。
+DEB_VER="${VER/-dev./~dev.}"
+DEB_FILE="$DIST/dsh-termux_${DEB_VER}_aarch64.deb"
 if have dpkg-deb; then
   bash "$HERE/deb.sh" "$PKGDIR" "$DIST" "$VER" "$ROOT"
-  bash "$HERE/verify-deb.sh" "$DIST/dsh-termux_${VER}_aarch64.deb" "$VER"
+  bash "$HERE/verify-deb.sh" "$DEB_FILE" "$DEB_VER" aarch64 "$VER"
 else
   warn "缺 dpkg-deb，跳过 .deb（CI runner 会生成）"
 fi
 
 echo
 info "完成：$DIST/dsh-termux.tgz ($(du -h "$DIST/dsh-termux.tgz" | cut -f1))"
-if [[ -f "$DIST/dsh-termux_${VER}_aarch64.deb" ]]; then
-  info "      $DIST/dsh-termux_${VER}_aarch64.deb ($(du -h "$DIST/dsh-termux_${VER}_aarch64.deb" | cut -f1))"
+if [[ -f "$DEB_FILE" ]]; then
+  info "      $DEB_FILE ($(du -h "$DEB_FILE" | cut -f1))"
 fi
 [[ "$DRY_RUN" == "1" ]] && info "dry-run：不发布"
 exit 0

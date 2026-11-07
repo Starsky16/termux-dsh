@@ -10,11 +10,14 @@
 - `main` 只随已验证版本推进；`dev` 可以领先。上游 `@deepseek-ai/dsh` 尚无稳定版
   （latest = `0.2.2-rc.1`），版本规则 `<upstream>-tdsh.<rev>`；**本仓 `main` 的构建直接
   作为正式 Release（Latest）发布**，版本号保留上游 `rc` 段以标明基座，不冒充上游稳定版。
-- 发版不变式：**dev = main = tag = 构建源**。`gh release create` 不带 `--target` 时
-  tag 会落在创建那一刻的 main HEAD 而非 run 的 checkout SHA——发布后核对
-  `git ls-remote` 的 tag 指向，必要时 `gh api -X PATCH .../git/refs/tags/<tag>
-  -f sha=<构建源> -F force=true` 修正；根治可给工作流的 release 步骤加
-  `--target "$GITHUB_SHA"`。
+- **两条发布通道**（2026-11-07 起，按 dispatch 的 ref 自动判定）：
+  - `main` → 正式 Release（Latest），版本 `<upstream>-tdsh.<rev>`；
+  - 其它分支（`dev` 等）→ **pre-release dev build**，版本追加 `-dev.<run_number>`，
+    形如 `0.2.2-rc.1-tdsh.1-dev.42`，标签同名；`bootstrap.sh` 解析最新 tag 时会跳过
+    `-dev.`，所以 dev 构建不会被用户自动装上。
+- 发版不变式：发正式版时 **dev = main = tag = 构建源**。发布步骤已内置
+  `--target "$GITHUB_SHA"`（tag 固定到本次 run 的 commit，不会落在创建时的 main HEAD）；
+  发布后仍用 `git ls-remote` 核对 tag 指向。
 
 ## 仓库结构
 
@@ -107,15 +110,17 @@ DSH_HOME=/tmp/tdsh-empty bash patches/apply.sh --check
 1. 在 `main` 上确认 `dev` 已合并、CI `dry_run=true` 全绿。
 2. 需要新版时 dispatch（**用 `gh workflow run`，不要用 `gh api .../dispatches`
    平铺参数——inputs 必须嵌套在 `inputs` 键下，平铺会报 422 "not permitted keys"**）：
+   - `--ref`：正式版用 `main`；想先出 **dev build** 就用 `dev`（自动 `--prerelease`
+     且版本带 `-dev.<run>`，见「分支与发布口径」）；
    - `upstream_version`：留空 = latest；建议显式锁定已验证版本（如 `0.2.2-rc.1`）；
    - `rev`：同一上游版本的修订号；
-   - `dry_run=false`。
+   - `dry_run=false`（只想看构建是否通过就设 `true`，只出 artifact 不发 Release）。
 3. 发布后核对：附件齐全（tarball + deb + 两份 sha256）且与 `.size`/sha256 对齐、
-   非 draft / 非 prerelease（`gh release view --json isLatest,isPrerelease`）、tag 指向
-   构建源（见「分支与发布口径」），然后真机重装（版本号回落时需
+   draft 状态、prerelease 与分支一致（`gh release view <tag> --json isPrerelease,tagName`）、
+   tag 指向构建源，然后真机重装（版本号回落时需
    `apt install --reinstall --allow-downgrades`）并跑 `dsh-termux-verify`。
-4. 发布步骤已内置 `--target "$GITHUB_SHA"` 与正式 Release 标记；改动发布策略时
-   同步更新本节与 `docs/architecture.md`。
+4. 发布步骤已内置 `--target "$GITHUB_SHA"`、按 ref 自动区分正式/预发布；
+   改动发布策略时同步更新本节与 `docs/architecture.md`。
 
 ## 报告问题
 

@@ -52,9 +52,23 @@ jobs:
           echo "ANDROID_NDK_ROOT=$NDK_ROOT" >> "$GITHUB_ENV"
           echo "NDK = $NDK_ROOT"
 
+      - name: Resolve release channel
+        id: channel
+        run: |
+          # main 的构建 = 正式 Release；其他分支（dev 等）= pre-release dev build，
+          # 版本号追加 -dev.<run>，避免与正式版撞号、撞 tag。
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            echo "suffix=" >> "$GITHUB_OUTPUT"
+            echo "is_dev=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "suffix=-dev.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+            echo "is_dev=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Repack
         env:
           REV: ${{ inputs.rev }}
+          VERSION_SUFFIX: ${{ steps.channel.outputs.suffix }}
         run: |
           bash repack/repack.sh "${{ inputs.upstream_version }}"
 
@@ -76,11 +90,19 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           V=$(cat dist/version.txt)
-          # 正式 Release（不标 prerelease）：本仓 main 的构建即 Latest。
+          # main 的构建 = 正式 Release（Latest）；dev 等分支 = pre-release dev build。
           # --target 固定 tag 到本次 run 的 commit，避免落在创建那一刻的 main HEAD。
           gh release delete "v$V" --yes --cleanup-tag || true
-          gh release create "v$V" dist/dsh-termux.tgz dist/dsh-termux.tgz.sha256 \
-            dist/*.deb dist/dsh-termux.deb.sha256 \
-            --title "dsh $V (Termux arm64)" \
-            --target "$GITHUB_SHA" \
-            --notes-file dist/release-notes.md
+          if [ "${{ steps.channel.outputs.is_dev }}" = "true" ]; then
+            gh release create "v$V" dist/dsh-termux.tgz dist/dsh-termux.tgz.sha256 \
+              dist/*.deb dist/dsh-termux.deb.sha256 \
+              --title "dsh $V (Termux arm64 dev build)" --prerelease \
+              --target "$GITHUB_SHA" \
+              --notes-file dist/release-notes.md
+          else
+            gh release create "v$V" dist/dsh-termux.tgz dist/dsh-termux.tgz.sha256 \
+              dist/*.deb dist/dsh-termux.deb.sha256 \
+              --title "dsh $V (Termux arm64)" \
+              --target "$GITHUB_SHA" \
+              --notes-file dist/release-notes.md
+          fi

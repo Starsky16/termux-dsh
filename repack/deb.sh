@@ -16,9 +16,12 @@ PKGDIR="${1:?用法：deb.sh <package-dir> <dist-dir> <version> <repo-root>}"
 DIST="${2:?}"
 VER="${3:?}"
 ROOT="${4:?}"
+# npm/semver 版本是 `<ver>-dev.N`；dpkg 里用 `~dev.N` 才能排在正式版之前，
+# 避免 dev build 装过后再装正式版被判成降级。
 PREFIX="${TDSH_DEB_PREFIX:-/data/data/com.termux/files/usr}"
 ARCH="${TDSH_DEB_ARCH:-aarch64}"
-DEB="$DIST/dsh-termux_${VER}_${ARCH}.deb"
+DEB_VER="${VER/-dev./~dev.}"
+DEB="$DIST/dsh-termux_${DEB_VER}_${ARCH}.deb"
 
 [[ -f "$PKGDIR/package.json" ]] || die "缺 package 树：$PKGDIR"
 if [[ "${TDSH_DEB_STAGE_ONLY:-0}" != "1" ]]; then
@@ -68,7 +71,7 @@ mkdir -p "$DEBIAN"
 chmod 755 "$DEBROOT" "$DEBIAN"
 cat >"$DEBIAN/control" <<EOF
 Package: dsh-termux
-Version: $VER
+Version: $DEB_VER
 Architecture: $ARCH
 Maintainer: Starsky16 <Starsky16@users.noreply.github.com>
 Depends: bash, nodejs-lts (>= 24.2), ripgrep, coreutils, patch, pnpm
@@ -129,5 +132,5 @@ fi
 rm -f "$DEB"
 dpkg-deb --build --root-owner-group "$DEBROOT" "$DEB" >/dev/null
 [[ -s "$DEB" ]] || die ".deb 为空：$DEB"
-sha256sum "$DEB" | awk '{print $1"  dsh-termux.deb"}' > "$DIST/dsh-termux.deb.sha256"
+sha256sum "$DEB" | awk -v n="$(basename "$DEB")" '{print $1"  "n}' > "$DIST/dsh-termux.deb.sha256"
 info "完成：$DEB ($(du -h "$DEB" | cut -f1))"

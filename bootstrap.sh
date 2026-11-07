@@ -8,8 +8,9 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/lib/common.sh"
 
-# GitHub's /releases/latest/download excludes pre-releases, and this repo
-# publishes rc builds as pre-releases. Resolve the newest tag through the API;
+# GitHub's /releases/latest/download excludes pre-releases, and this repo also
+# publishes pre-release dev builds from branches. Resolve the newest *stable*
+# tag through the API (skip `-dev.N`), so a dev build is never auto-installed;
 # TDSH_RELEASE_BASE still overrides everything.
 resolve_release_base() {
   if [[ -n "${TDSH_RELEASE_BASE:-}" ]]; then
@@ -18,7 +19,7 @@ resolve_release_base() {
   fi
   local tag
   tag="$(curl -fsSL 'https://api.github.com/repos/Starsky16/termux-dsh/releases?per_page=10' 2>/dev/null \
-    | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -1 || true)"
+    | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | grep -v -- '-dev\.' | head -1 || true)"
   if [[ -n "$tag" ]]; then
     printf 'https://github.com/Starsky16/termux-dsh/releases/download/%s\n' "$tag"
   else

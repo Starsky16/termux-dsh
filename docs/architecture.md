@@ -19,7 +19,7 @@
 6. `tar | gzip` 生成 asset，`repack/verify-package.sh` 做架构、文件、版本、补丁、
    `libc++_shared` 断言；
 7. 可选：`repack/deb.sh` 把同一运行时树组装成 Termux `.deb`（含 launcher、profile 脚本与 `dsh-termux-setup`），`verify-deb.sh` 校验；
-8. `dry_run=false` 时 `gh release create --target "$GITHUB_SHA"`（正式 Release，不标 prerelease），上传 tarball 与 `.deb`。
+8. `dry_run=false` 时 `gh release create --target "$GITHUB_SHA"` 上传 tarball 与 `.deb`；`main` 发正式 Release，其它分支加 `-dev.<run>` 版本后缀并标 prerelease。
 
 ## 2. 运行时层（profile 树）
 

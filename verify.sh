@@ -47,7 +47,12 @@ chk "profile 树补丁就位" bash "$HERE/patches/apply.sh" --check
 echo
 echo "== profile 配置 =="
 chk "sandbox 放行已配置" bash -c 'dsh --profile web --dump-config 2>/dev/null | grep -q allowUnconfinedFallback'
-chk "profile 无已废弃 web-fetch 键" bash -c '! dsh --profile web --dump-config 2>/dev/null | grep -q allowBenchmarkAddresses'
+# 0.2.2 起上游移除 SSRF 校验，allowBenchmarkAddresses 成为废弃键；旧版本仍需要它。
+if dsh --version 2>/dev/null | head -1 | grep -qE '(^|-)0\.2\.[2-9]|(^|-)0\.[3-9]|(^|-)v?[1-9][0-9]*\.'; then
+  chk "profile 无已废弃 web-fetch 键" bash -c '! dsh --profile web --dump-config 2>/dev/null | grep -q allowBenchmarkAddresses'
+else
+  skip "web-fetch 废弃键检查（0.2.1 及更早仍需 allowBenchmarkAddresses）"
+fi
 chk "HMR 已禁用" bash -c 'dsh --profile web --dump-config 2>/dev/null | grep -A2 -E "^[[:space:]]*- id: hmr" | grep -q "disabled: true"'
 
 echo

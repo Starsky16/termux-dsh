@@ -66,6 +66,20 @@ npm/
    若存在 `~/code/dsh-compat/bin/patch.mjs` 则重打 L2。失败只告警
 8. 检测 `dsh` bin 是否被官方 `@deepseek-ai/dsh` 占用并提示（不会阻止安装）
 
+### npm 12 的脚本审批（实测结论）
+
+npm 12 默认拦截未审批的 `postinstall`，`--allow-scripts` 在项目级安装被拒、用户级
+`.npmrc` 实测也未放行。因此**安装不能依赖 postinstall**：
+
+- 入口兜底：`bin/cli.mjs` 启动时若 `runtime/` 缺失，自动执行一次安装流程再启动
+- shebang：npm 的 `.bin` 是 symlink 指向 `bin/cli.mjs`，只需修入口文件；
+  推荐安装后用 Termux 自带工具修一次：
+  `termux-fix-shebang "$PREFIX/bin/dsh" "$PREFIX/bin/termux-dsh"`
+- 若用户愿意审批脚本（`npm install-scripts approve termux-dsh`），postinstall 会在安装时
+  就把运行时备好，首次启动无需等待
+
+文档里的推荐命令因此是两条：`npm i -g termux-dsh` + `termux-fix-shebang …`。
+
 ## 5. CI 集成
 
 `repack.yml` 步骤顺序：Repack → Upload build → **Publish release** → **Publish npm**。

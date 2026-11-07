@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { download, parseSha256File, releaseUrl, verifySha256 } from "../lib/download.mjs";
-import { fixBinShebang, globalBinDir, repatchL2, runProfileSetup } from "../lib/setup.mjs";
+import { fixBinShebang, fixEntrypoint, globalBinDir, repatchL2, runProfileSetup } from "../lib/setup.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const pkgRoot = join(here, "..");
@@ -49,7 +49,9 @@ async function main() {
       throw new Error("解压后缺少 lib/bin.js，运行时包不完整");
     }
 
-    // 本地安装修 node_modules/.bin；全局安装修 $PREFIX/bin。两者都只动 env-node shim。
+    // npm 的 .bin 是 symlink，真正生效的是包内入口脚本，优先修它。
+    fixEntrypoint(join(pkgRoot, "bin", "cli.mjs"));
+    // 旧版 npm 会写 shim 文件（非 symlink），一并处理；两者都只动 env-node shim。
     fixBinShebang(join(pkgRoot, "..", ".bin"));
     const binDir = globalBinDir();
     if (binDir) fixBinShebang(binDir);

@@ -2,6 +2,18 @@ import { execFileSync } from "node:child_process";
 import { chmodSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+/** 把包内入口脚本的 shebang 换成当前 node（npm 的 .bin 是 symlink，直接指向它）。 */
+export function fixEntrypoint(file) {
+  if (!existsSync(file)) return false;
+  const text = readFileSync(file, "utf8");
+  if (!text.startsWith("#!/usr/bin/env node")) return false;
+  const nl = text.indexOf("\n");
+  const body = nl === -1 ? "" : text.slice(nl + 1);
+  writeFileSync(file, `#!${process.execPath}\n${body}`);
+  chmodSync(file, 0o755);
+  return true;
+}
+
 /** 把 npm 生成的 bin shim 首行换成当前 node，Termux 没有 /usr/bin/env。
  *  只处理 `#!/usr/bin/env node` 的 shim，绝不碰 deb 装的 bash 启动器。 */
 export function fixBinShebang(binDir, names = ["dsh", "termux-dsh"]) {

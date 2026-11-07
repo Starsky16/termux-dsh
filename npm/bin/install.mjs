@@ -49,6 +49,8 @@ async function main() {
       throw new Error("解压后缺少 lib/bin.js，运行时包不完整");
     }
 
+    // 本地安装修 node_modules/.bin；全局安装修 $PREFIX/bin。两者都只动 env-node shim。
+    fixBinShebang(join(pkgRoot, "..", ".bin"));
     const binDir = globalBinDir();
     if (binDir) fixBinShebang(binDir);
     runProfileSetup(join(pkgRoot, "share"));

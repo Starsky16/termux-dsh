@@ -2,13 +2,14 @@ import { execFileSync } from "node:child_process";
 import { chmodSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-/** 把 npm 生成的 bin shim 首行换成当前 node，Termux 没有 /usr/bin/env。 */
+/** 把 npm 生成的 bin shim 首行换成当前 node，Termux 没有 /usr/bin/env。
+ *  只处理 `#!/usr/bin/env node` 的 shim，绝不碰 deb 装的 bash 启动器。 */
 export function fixBinShebang(binDir, names = ["dsh", "termux-dsh"]) {
   for (const name of names) {
     const file = join(binDir, name);
     if (!existsSync(file)) continue;
     const text = readFileSync(file, "utf8");
-    if (!text.startsWith("#!")) continue;
+    if (!text.startsWith("#!/usr/bin/env node")) continue;
     const nl = text.indexOf("\n");
     const body = nl === -1 ? "" : text.slice(nl + 1);
     writeFileSync(file, `#!${process.execPath}\n${body}`);

@@ -44,7 +44,7 @@ pkg install ./dsh-termux_<version>_aarch64.deb
 启动器、`$PREFIX/bin/dsh-termux-setup` 和 profile/补丁脚本。`postinst` 会尽力执行：
 
 - `setup-env.sh`（`.zshenv` 环境块）
-- `apply-overrides.sh`（sandbox / approval / web-fetch / HMR）
+- `apply-overrides.sh`（sandbox / approval / HMR）
 - `setup-selfcheck.sh`（`~/bin/dsh` wrapper）
 
 需要重跑时：
@@ -101,7 +101,7 @@ termux-fix-shebang "$(command -v dsh)" "$(npm root -g)/dsh-termux/lib/bin.js"
 # 4) 环境变量（写入 ~/.zshenv 的 termux-dsh 标记块，幂等）
 bash ~/code/termux-dsh/profile/setup-env.sh
 
-# 5) profile 覆盖（sandbox / approval / web-fetch，幂等）
+# 5) profile 覆盖（sandbox / approval / HMR，幂等）
 bash ~/code/termux-dsh/profile/apply-overrides.sh
 
 # 6) 接线（两槽记忆、技能、hooks、bin、plans）
@@ -133,7 +133,7 @@ git -C ~/code/termux-dsh pull --ff-only
 bash ~/code/termux-dsh/bootstrap.sh
 ```
 
-重组包版本形如 `0.2.1-rc.5-tdsh.1`，与上游 `-termux.` 包明确区分。
+重组包版本形如 `0.2.2-rc.1-tdsh.1`，与上游 `-termux.` 包明确区分。
 升级后 `verify.sh` 仍须全 PASS；不绿就不要继续使用。
 
 ## 5. 回滚
@@ -153,7 +153,7 @@ npm uninstall -g dsh-termux
 | `dsh` 命令不存在 / shebang 报错 | Node 是否 >= 24.2；`termux-fix-shebang "$(command -v dsh)"` |
 | `grep`/`glob` 全部失败 | `pkg install ripgrep`；`node -e "import('@vscode/ripgrep')"` |
 | 所有 `bash`/exec 工具被拒 | profile 覆盖是否写入 `allowUnconfinedFallback` |
-| `web_fetch` 全拒 | profile 覆盖是否写入 `allowBenchmarkAddresses` |
+| `web_fetch` 全拒 | 0.2.2 起上游已移除 SSRF 校验；仍失败时查网络/代理与 `dsh --profile web --dump-config` |
 | 会话无法保存 | 包内 B5（session-persistence 的 `rename` 兜底）是否生效；`verify.sh` 的会话补丁项 |
 | 启动即崩、HMR 报缺 `--expose-internals` | 包内 B6（HMR 守卫）是否生效 |
 | 安装原生模块时编译失败 | 不要自行编译：Release 包已含 `android-arm64` 产物 |

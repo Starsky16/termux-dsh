@@ -1,6 +1,6 @@
 # Changelog
 
-本仓版本规则：`<upstream-dsh-version>-tdsh.<rev>`。上游仍是 `0.2.1-rc.5` 时，
+本仓版本规则：`<upstream-dsh-version>-tdsh.<rev>`。上游当前为 `0.2.2-rc.1`，
 所有 Release 都保留上游的 `rc` 段；本仓**不冒充上游稳定版**。
 
 ## Unreleased
@@ -8,6 +8,29 @@
 - 等 `@deepseek-ai/dsh` 发布稳定版后，从 `main` 发 `0.2.1-tdsh.1`（或对应上游版本）。
 - 发布前给 `.github/workflows/repack.yml` 增加 `prerelease` 开关（当前 `gh release create`
   硬编码 `--prerelease`），并在 Termux 回归通过后标记 Latest。
+
+## [0.2.2-rc.1-tdsh.1] — 待发布（CI 构建 + 真机验证后回填）
+
+### Changed
+
+- 上游基线 `0.2.1-rc.5` → `0.2.2-rc.1`；`patches/manifest.json` 全部 A 类锚点按新版重新生成。
+- A2 `fs-local`：上游重写了 `writeFileAtomic` 的上下文，补丁重建（语义不变：硬链接
+  不可用时回退 `copyFile(..., COPYFILE_EXCL)`）。
+- A3 `attachment-local`、A5 `sandbox-local`：补丁文本不变，pristine/patched 哈希更新。
+- 平台层未变：koffi `3.1.1`、node-pty `1.2.0-beta.15`、require-builtin `0.1.9`；
+  B1–B5、B10 锚点在新版上全部匹配。
+
+### Removed
+
+- A6 `web-fetch-http` 补丁与 `profile/overrides.yml` 的 web-fetch 覆盖：上游 0.2.2
+  移除了公网 IP/SSRF 校验与 `allowBenchmarkAddresses` 配置项，补丁已无作用。
+  `apply-overrides.sh` 会顺手清理旧 profile 中残留的该键。
+
+### Verified
+
+- 在隔离目录安装 `0.2.2-rc.1`、应用全部 A 类补丁：7 target / 7 文件哈希全匹配；
+  B1–B5、B10 `patch --dry-run` 全通过；补丁后文件 `node --check` 通过。
+- 待办：CI 构建（NDK 原生件）与 Termux 真机 `dsh-termux-verify` 全项。
 
 ## [0.2.1-rc.5-tdsh.4] — 2026-11-01
 

@@ -78,7 +78,6 @@ check_grep "$PKG/node_modules/@deepseek-ai/dsh-fs-local/lib/index.js" 'HARD_LINK
 check_grep "$PKG/node_modules/@deepseek-ai/dsh-attachment-local/lib/index.js" 'TERMUX PATCH' "A3 attachment durability"
 check_grep "$PKG/node_modules/@deepseek-ai/dsh-spill-local/lib/index.js" 'writableByMe' "A4 spill ancestor rule"
 check_grep "$PKG/node_modules/@deepseek-ai/dsh-sandbox-local/lib/index.js" 'allowUnconfinedFallback' "A5 sandbox fallback"
-check_grep "$PKG/node_modules/@deepseek-ai/dsh-web-fetch-http/lib/index.js" 'allowBenchmarkAddresses' "A6 web-fetch benchmark range"
 check_grep "$PKG/node_modules/@deepseek-ai/node-addon-system/lib/flock.js" 'softTryLockExclusive' "A7 flock softlock"
 check_file "$PKG/node_modules/@deepseek-ai/node-addon-system/lib/softlock.js" "A7 softlock file"
 

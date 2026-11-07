@@ -3,7 +3,8 @@
 #
 # Each block in overrides.yml is appended only when its marker is absent, so
 # legacy installs that already have the sandbox block get just the missing
-# web-fetch / HMR rows. The profile file is backed up before any change.
+# HMR row. The retired web-fetch override (upstream 0.2.2 dropped the SSRF
+# guard) is removed when present. The profile file is backed up before any change.
 #
 # Usage: apply-overrides.sh [profile-name]
 set -euo pipefail
@@ -52,8 +53,15 @@ append_block() {
   info "已追加：$first"
 }
 
-append_block sandbox web-fetch "allowUnconfinedFallback"
-append_block web-fetch hmr "allowBenchmarkAddresses"
+# 上游 0.2.2 移除了 web-fetch 的 SSRF 校验，旧的 allowBenchmarkAddresses
+# 开关已无对应配置项：从旧 profile 里清掉这一行（无害但属废弃键）。
+if grep -qE '^[[:space:]]*allowBenchmarkAddresses:' "$TARGET" 2>/dev/null; then
+  sed -i '/^[[:space:]]*allowBenchmarkAddresses:[[:space:]]*.*$/d' "$TARGET"
+  changed=1
+  info "已移除废弃键：allowBenchmarkAddresses"
+fi
+
+append_block sandbox hmr "allowUnconfinedFallback"
 if grep -qE '(^|[[:space:]])id: hmr([[:space:]]|$)' "$TARGET" 2>/dev/null; then
   info "已存在：hmr"
 else

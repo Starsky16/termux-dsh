@@ -8,10 +8,10 @@
 
 | 项 | 值 |
 |---|---|
-| 上游基座 | 官方 npm 包 `@deepseek-ai/dsh@0.2.1-rc.5`（CI 跟随 latest，见下） |
+| 上游基座 | 官方 npm 包 `@deepseek-ai/dsh@0.2.2-rc.1`（CI 跟随 latest，见下） |
 | 补丁生成时锁定的依赖 | `koffi@3.1.1`（`dsh-fs-local` 固定）、`node-pty@1.2.0-beta.15`（`dsh-subprocess-local` 固定） |
-| A 类目标文件 | 在 `0.2.1-rc.2` 与 `0.2.1-rc.5` 间逐字节一致（2026-10-31 实测） |
-| 产物版本 | `<upstream>-tdsh.<rev>`，例如 `0.2.1-rc.5-tdsh.1` |
+| A 类目标文件 | 按 `0.2.2-rc.1` 重新锚定（2026-11-07 实测）；0.2.1-rc.5 的旧锚点已失效 |
+| 产物版本 | `<upstream>-tdsh.<rev>`，例如 `0.2.2-rc.1-tdsh.1` |
 
 **CI 跟 latest 的策略**：`repack.yml` 每次手动 dispatch 时解析 `@deepseek-ai/dsh@latest`，
 再对每个 target 做 **pristine 哈希 / 锚点断言**。任一断言失败 → 构建非 0 → 不发布
@@ -26,7 +26,10 @@ A 类补丁路径相对**目标包根**，例如 `patches/core/fs-local.patch` �
 
 ## A. 宿主补丁（烤进包 + profile 树兜底）
 
-共 7 个 target / 8 个文件（`node-addon-system` 含 `flock.js` 与新增 `softlock.js`）。
+共 6 个 target / 7 个文件（`node-addon-system` 含 `flock.js` 与新增 `softlock.js`）。
+
+> 0.2.2 起上游 `dsh-web-fetch-http` 移除了公网 IP/SSRF 校验，原 A6 补丁与
+> `allowBenchmarkAddresses` 配置项一并退役（`patches/core/web-fetch-http.patch` 已删除）。
 
 | # | 目标 | 症状 | 改法 | 补丁 |
 |---|---|---|---|---|
@@ -35,7 +38,6 @@ A 类补丁路径相对**目标包根**，例如 `patches/core/fs-local.patch` �
 | A3 | `@deepseek-ai/dsh-attachment-local/lib/index.js` | 祖先目录 `/data/data` 为 `0771`，`open(O_RDONLY)` 报 EACCES；对象发布用 hardlink 也失败，`read_image` 挂 | 祖先 durability walk 对 Android 的 EACCES/EPERM 视作已 durable；两处 `link` 同样回退 `COPYFILE_EXCL` | `core/attachment-local.patch` |
 | A4 | `@deepseek-ai/dsh-spill-local/lib/index.js` | 祖先信任规则要求非 group-writable，`/data/data` 与 Termux files 目录都是 `0771`，所有 spill root 被跳过 | Android 分支：仅当祖先既非 sticky、非本进程所有、且本进程确实可写时才判不安全；否则继续向上 | `core/spill-local.patch` |
 | A5 | `@deepseek-ai/dsh-sandbox-local/lib/index.js` | 无 Landlock/bwrap，`PLATFORM_CHAINS.android` 为空，`confine()` 抛 `SANDBOX_UNAVAILABLE`，所有 exec 工具拒跑 | 新增 opt-in `allowUnconfinedFallback`：无可用 rung 时告警一次并以 `enforcement: "partial"` 放行；默认关闭，上游 fail-closed 语义不变 | `core/sandbox-local.patch` |
-| A6 | `@deepseek-ai/dsh-web-fetch-http/lib/index.js` | 本机 resolver 把域名解析进 `198.18.0.0/15`，SSRF 守卫全拒 | 新增 opt-in `allowBenchmarkAddresses`：只放行该保留段，不放行 loopback/private/link-local | `core/web-fetch-http.patch` |
 | A7 | `@deepseek-ai/node-addon-system/lib/flock.js` + `lib/softlock.js` | 原生 flock 无 android-arm64 绑定，会话无法建立 | 原生绑定仍优先；加载失败时回退纯 JS `O_EXCL` sidecar + pid 探活；`releaseLock` 转发释放 | `core/node-addon-system-flock.patch` + `core/node-addon-system-softlock.patch` |
 
 **A7 的 `softlock.js` 是新增文件**：manifest 中 `pristine_sha256` 为 `null`，`patched_sha256`
@@ -81,8 +83,8 @@ B 类补丁在 `repack/native/*.sh` 里对下载的源码副本执行，**不发
 ```bash
 # 1) 取 pristine（版本与 manifest.base 一致）
 mkdir -p /tmp/base && cd /tmp/base
-npm pack "@deepseek-ai/dsh-fs-local@0.2.1-rc.5"
-mkdir -p pkg && tar -xzf deepseek-ai-dsh-fs-local-0.2.1-rc.5.tgz -C pkg --strip-components=1
+npm pack "@deepseek-ai/dsh-fs-local@0.2.2-rc.1"
+mkdir -p pkg && tar -xzf deepseek-ai-dsh-fs-local-0.2.2-rc.1.tgz -C pkg --strip-components=1
 
 # 2) 对比 patches/core/fs-local.patch 的 b 侧，确认仍是预期修改
 #    b 侧可先 `git apply` 到 pkg，再与仓库内维护的 patched 副本比对

@@ -48,14 +48,15 @@
 ```
 
 - `profile/setup-env.sh`：在 `~/.zshenv` 写幂等 `termux-dsh` 标记块。
-- `profile/apply-overrides.sh`：把 sandbox / approval / web-fetch / HMR 覆盖追加到
+- `profile/apply-overrides.sh`：把 sandbox / approval / HMR 覆盖追加到
   profile 的 `cordis.patch.yml`，处理新 profile 的 `[]` 空数组。
 - `wiring/link-workspace.sh`：两槽记忆、技能、hooks、bin、plans；目录型目标先备份。
 
 ## 补丁分类
 
 - **A 类（host）**：dsh 官方依赖的 JS 源码补丁，锁 pristine / patched sha256，
-  用于 SELinux 硬链接、spill 祖先、sandbox、web-fetch、ripgrep 回退等。
+  用于 SELinux 硬链接、spill 祖先、sandbox、ripgrep 回退等（0.2.2 起 web-fetch 补丁退役，
+  上游已移除对应 SSRF 校验）。
 - **B 类（port）**：koffi / node-pty / session-persistence / HMR / 版本显示 /
   require-builtin 等移植层改动；B6 是 profile 配置替代，B11 是原生构建。
 

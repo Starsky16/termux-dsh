@@ -8,7 +8,7 @@
 - `dev`：开发分支。
 - `main`：默认分支 / 发布分支（2026-10-31 起）；正式版从这里出。
 - `main` 只随已验证版本推进；`dev` 可以领先。当前 Release 仍是 pre-release：
-  上游 `@deepseek-ai/dsh` 尚无稳定版（latest = `0.2.1-rc.5`），版本规则
+  上游 `@deepseek-ai/dsh` 尚无稳定版（latest = `0.2.2-rc.1`），版本规则
   `<upstream>-tdsh.<rev>`，上游 rc 阶段不冒充稳定版。
 - 发版不变式：**dev = main = tag = 构建源**。`gh release create` 不带 `--target` 时
   tag 会落在创建那一刻的 main HEAD 而非 run 的 checkout SHA——发布后核对
@@ -25,7 +25,7 @@ lib/common.sh                日志 / 断言 / sha256 / 幂等下载
 patches/
 ├─ manifest.json             每个 target：包名、包内路径、pristine/patched sha256
 ├─ apply.sh                  --check / --apply / --revert，只打 profile 树
-├─ core/*.patch              A 类宿主补丁（7 target / 8 文件）
+├─ core/*.patch              A 类宿主补丁（6 target / 7 文件）
 └─ platform/*.patch          B 类移植层补丁（koffi / node-pty / session / require-builtin）
 repack/
 ├─ repack.sh                 本地与 CI 共用：npm 基座 → 补丁 → 平台件 → 原生 → tar → 校验
@@ -107,7 +107,7 @@ DSH_HOME=/tmp/tdsh-empty bash patches/apply.sh --check
 1. 在 `main` 上确认 `dev` 已合并、CI `dry_run=true` 全绿。
 2. 需要新版时 dispatch（**用 `gh workflow run`，不要用 `gh api .../dispatches`
    平铺参数——inputs 必须嵌套在 `inputs` 键下，平铺会报 422 "not permitted keys"**）：
-   - `upstream_version`：留空 = latest；建议显式锁定已验证版本（如 `0.2.1-rc.5`）；
+   - `upstream_version`：留空 = latest；建议显式锁定已验证版本（如 `0.2.2-rc.1`）；
    - `rev`：同一上游版本的修订号；
    - `dry_run=false`。
 3. 发布后核对：附件齐全（tarball + deb + 两份 sha256）且与 `.size`/sha256 对齐、

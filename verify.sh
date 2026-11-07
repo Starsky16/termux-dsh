@@ -47,7 +47,7 @@ chk "profile 树补丁就位" bash "$HERE/patches/apply.sh" --check
 echo
 echo "== profile 配置 =="
 chk "sandbox 放行已配置" bash -c 'dsh --profile web --dump-config 2>/dev/null | grep -q allowUnconfinedFallback'
-chk "web-fetch 放行已配置" bash -c 'dsh --profile web --dump-config 2>/dev/null | grep -q allowBenchmarkAddresses'
+chk "profile 无已废弃 web-fetch 键" bash -c '! dsh --profile web --dump-config 2>/dev/null | grep -q allowBenchmarkAddresses'
 chk "HMR 已禁用" bash -c 'dsh --profile web --dump-config 2>/dev/null | grep -A2 -E "^[[:space:]]*- id: hmr" | grep -q "disabled: true"'
 
 echo

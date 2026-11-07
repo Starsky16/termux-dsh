@@ -7,11 +7,14 @@
 # These are dsh *host service* settings, not plugin configuration:
 #   - no Landlock/bwrap ⇒ opt into the sandbox's unconfined fallback
 #   - full access on this device by default; DSH_PERMISSION_MODE still wins
-#   - the local resolver answers inside 198.18.0.0/15 ⇒ admit that block
 #   - HMR needs Node internals unavailable on Termux ⇒ disable it
 #
 # The last point replaces a B6 source patch: dsh-plugin-manager handles a
 # missing `hmr` service with its documented `no-hmr` restart path.
+#
+# 0.2.2 起上游 dsh-web-fetch-http 移除了公网 IP/SSRF 校验，原 A6 补丁与
+# allowBenchmarkAddresses 配置项随之退役，web-fetch 覆盖块已删除；
+# 旧 profile 里残留的该键会被 schemastery 忽略，apply-overrides.sh 会顺手清掉。
 
 # --- block: sandbox ---
 - id: sandbox
@@ -29,12 +32,6 @@
   name: "@deepseek-ai/dsh-user-approval"
   config:
     policy: !!js "(process.env.DSH_PERMISSION_MODE ?? 'danger-full-access') === 'danger-full-access' ? 'never' : 'ask'"
-
-# --- block: web-fetch ---
-- id: web-fetch-http
-  name: "@deepseek-ai/dsh-web-fetch-http"
-  config:
-    allowBenchmarkAddresses: true
 
 # --- block: hmr ---
 - id: hmr

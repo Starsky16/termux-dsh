@@ -11,10 +11,11 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/platform-Termux%20arm64-informational)
 
-> **当前状态（2026-11-01）**：`v0.2.1-rc.5-tdsh.5` 已在 Termux 真机验证通过
+> **当前状态（2026-11-07）**：上一版 `v0.2.1-rc.5-tdsh.5` 已在 Termux 真机验证通过
 > （vivo iPA2575 / Android 16 / aarch64）：安装脚本与 `dsh-termux-verify` 全项 PASS、
-> `dsh web` 稳定、重启后会话保留。上游 dsh 仍**没有稳定版**（latest 仍是 `0.2.1-rc.5`），
-> 所以本仓先以 pre-release 分发，等上游出稳定版后再提供正式版。
+> `dsh web` 稳定、重启后会话保留。上游已发布 `0.2.2-rc.1`（仍无稳定版），本仓补丁
+> 已按该版本重新锚定，新包待 CI 构建与真机验证；在验证通过前请继续安装 tdsh.5。
+> 上游出稳定版后再提供正式版。
 
 ## 它解决什么问题
 
@@ -74,7 +75,7 @@ dsh web
 ## 验证安装
 
 ```bash
-dsh --version   # 应输出 0.2.1-rc.5-tdsh.5
+dsh --version   # 应输出与所装包一致的 <上游版本>-tdsh.<rev>，如 0.2.2-rc.1-tdsh.1
 bash verify.sh  # 在仓库目录执行；结果应为：全部 PASS
 ```
 
@@ -103,7 +104,7 @@ dpkg -r dsh-termux            # 方式二装的（会一并移除 ~/bin/dsh）
 
 ## 已知限制
 
-- 上游仍是 `0.2.1-rc.5`，所以当前 Release 是 pre-release；正式版等上游稳定。
+- 上游最新是 `0.2.2-rc.1`（仍为候选版），所以当前 Release 都是 pre-release；正式版等上游稳定。
 - **HMR（热重载）在 Termux 上禁用**；修改配置/插件后需重启 `dsh web`。
 - 图像处理走 wasm 版 sharp（不是 Android 原生包）；常用读图已在真机验证，
   特殊格式仍可能受 wasm 能力限制。

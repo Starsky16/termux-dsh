@@ -70,7 +70,7 @@ info "[4/8] 环境变量与启动自检"
 bash "$HERE/profile/setup-env.sh"
 bash "$HERE/profile/setup-selfcheck.sh"
 
-info "[5/8] profile 覆盖（sandbox/approval/web-fetch/HMR）"
+info "[5/8] profile 覆盖（sandbox/approval/HMR）"
 bash "$HERE/profile/apply-overrides.sh"
 
 info "[6/8] 接线（workflow-sync 存在时）"

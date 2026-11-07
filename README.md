@@ -11,11 +11,10 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/platform-Termux%20arm64-informational)
 
-> **当前状态（2026-11-07）**：上一版 `v0.2.1-rc.5-tdsh.5` 已在 Termux 真机验证通过
-> （vivo iPA2575 / Android 16 / aarch64）：安装脚本与 `dsh-termux-verify` 全项 PASS、
-> `dsh web` 稳定、重启后会话保留。上游已发布 `0.2.2-rc.1`（仍无稳定版），本仓补丁
-> 已按该版本重新锚定，新包待 CI 构建与真机验证；在验证通过前请继续安装 tdsh.5。
-> 上游出稳定版后再提供正式版。
+> **当前状态（2026-11-07）**：`v0.2.2-rc.1-tdsh.1` 已在 Termux 真机验证通过
+> （vivo iPA2575 / Android 16 / aarch64）：CI 构建全绿、`dsh-termux-verify` 全项 PASS、
+> `dsh web` 冒烟启动正常。上游 `0.2.2-rc.1` 仍无稳定版，但本仓 `main` 的构建直接作为
+> 正式 Release（Latest）发布，版本号保留上游 `rc` 段。
 
 ## 它解决什么问题
 

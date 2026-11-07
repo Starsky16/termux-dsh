@@ -10,7 +10,7 @@
   `gh release create` 已去掉 `--prerelease` 并加 `--target "$GITHUB_SHA"`；
   版本号仍保留上游 `rc` 段。
 
-## [0.2.2-rc.1-tdsh.1] — 待发布（CI 构建 + 真机验证后回填）
+## [0.2.2-rc.1-tdsh.1] — 2026-11-07
 
 ### Changed
 
@@ -31,7 +31,12 @@
 
 - 在隔离目录安装 `0.2.2-rc.1`、应用全部 A 类补丁：7 target / 7 文件哈希全匹配；
   B1–B5、B10 `patch --dry-run` 全通过；补丁后文件 `node --check` 通过。
-- 待办：CI 构建（NDK 原生件）与 Termux 真机 `dsh-termux-verify` 全项。
+- CI：dry-run `42330686925` 与发布 `42330930342` 全绿；A1–A7、B5/B10、三个原生件
+  `static libc++`、`verify-package.sh` / `verify-deb.sh` 全 PASS。
+- 真机（vivo iPA2575 / Android 16）：`dsh --version` = `0.2.2-rc.1-tdsh.1`；
+  `dsh-termux-verify` 全项 PASS；`dsh web --no-open --port 0` 冒烟启动成功。
+- 已知：`dsh-compat` 的 L2 补丁锚点尚未适配 0.2.2 的 `dsh-client-modules/lib/client.js`
+  （安装后 `postinst` 重打报 drift），属姊妹仓跟进项，不阻塞 dsh 本体。
 
 ### Release
 

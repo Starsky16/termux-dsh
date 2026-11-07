@@ -1,0 +1,31 @@
+{
+  "name": "termux-dsh",
+  "version": "__VERSION__",
+  "description": "Termux/Android arm64 repack of dsh: installs the prebuilt runtime from GitHub Releases",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "dsh": "bin/cli.mjs",
+    "termux-dsh": "bin/cli.mjs"
+  },
+  "scripts": {
+    "postinstall": "node bin/install.mjs"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "share/"
+  ],
+  "engines": {
+    "node": ">=24.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Starsky16/termux-dsh.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Starsky16/termux-dsh/issues"
+  },
+  "homepage": "https://github.com/Starsky16/termux-dsh#readme",
+  "keywords": ["dsh", "termux", "android", "arm64", "deepseek-harness"]
+}

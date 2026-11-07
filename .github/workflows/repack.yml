@@ -124,5 +124,5 @@ jobs:
           echo "npm $(npm --version)"
           if [ "${GITHUB_REF_NAME}" = "main" ]; then TAG=latest; else TAG=next; fi
           # npm 12 会把裸路径当 git 包（github:dist/npm），必须加 ./ 前缀
-          npm publish ./dist/npm --tag "$TAG" --provenance
+          npm publish ./dist/npm --tag "$TAG" --provenance --loglevel verbose
           echo "published termux-dsh@$(cat dist/version.txt) (tag=$TAG)"

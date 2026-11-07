@@ -1,6 +1,11 @@
 # npm 包发布设计（termux-dsh）
 
-> 状态：已定稿（2026-11-07）· 决策：bootstrapper + Trusted Publishing（OIDC）
+> 状态：已实现，发布暂缓（2026-11-07）· 决策：bootstrapper + Trusted Publishing（OIDC）
+>
+> **阻塞说明**：`termux-dsh@0.2.2-rc.1-tdsh.1` 已由本地手工发布上线；但 npm 已弃用 TOTP、
+> 强制 passkey 2FA，可信发布者配置页要求先完成 2FA，因此 CI 的 OIDC 自动发布暂缓
+> （仓库变量 `NPM_PUBLISH_ENABLED` 默认关闭）。恢复步骤见第 7 节，另需先在 npm 网页
+> 完成 passkey 注册并配置 trusted publisher。
 >
 > 相关：`docs/architecture.md`、`CONTRIBUTING.md`「分支与发布口径」
 

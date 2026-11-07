@@ -47,6 +47,9 @@ npm 包只是安装器：运行时按版本从 GitHub Release 下载并校验 sh
 若你愿意审批脚本（`npm install-scripts approve termux-dsh`），安装时就会先下载好。
 dev 构建用 `npm i -g termux-dsh@next`；非 Termux/arm64 环境会拒绝安装。
 
+> **npm 渠道当前暂缓自动发布**：首次版本 `0.2.2-rc.1-tdsh.1` 已上线，但后续版本不会
+> 自动同步（npm 强制 passkey 2FA，配置可信发布者受阻）。新版本请以 GitHub Release 为准。
+
 **方式一（推荐）：一条命令自动安装**
 
 ```bash

@@ -18,6 +18,8 @@
   下载并校验 sha256；CI 用 Trusted Publishing（OIDC）发布，不保存长期 token，
   `latest` ← main、`next` ← dev。npm 12 会拦 `postinstall`，安装后跑一次
   `termux-fix-shebang`，首次启动自动补下载。
+  **当前状态**：`0.2.2-rc.1-tdsh.1` 已手动发布上线；后续自动发布暂缓——npm 已弃用 TOTP、
+  强制 passkey 2FA，配置可信发布者受阻（CI 开关 `NPM_PUBLISH_ENABLED` 默认关闭）。
 
 ### Changed
 

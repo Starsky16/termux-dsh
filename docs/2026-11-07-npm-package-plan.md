@@ -660,10 +660,13 @@ node npm/make-package.mjs dist/npm 0.2.2-rc.1-tdsh.1
 - [ ] **Step 2: 本地发布（交互 2FA）**
 
 ```bash
-npm publish dist/npm --tag latest --access public
+npm publish ./dist/npm --tag latest --access public
 ```
 
 Expected: 输出 `+ termux-dsh@0.2.2-rc.1-tdsh.1`
+
+> npm 12 坑：`npm publish dist/npm` 会把路径当作 GitHub 包（`github:dist/npm`，报
+> `EALLOWGIT`）；必须写 `./dist/npm` 或绝对路径。
 
 - [ ] **Step 3: 配置 Trusted Publishing**
 

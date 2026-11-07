@@ -27,6 +27,21 @@ bash ~/code/termux-dsh/bootstrap.sh
 dsh web
 ```
 
+## 1.0 npm 安装（可选）
+
+```bash
+npm i -g termux-dsh
+termux-fix-shebang "$PREFIX/bin/dsh" "$PREFIX/bin/termux-dsh"
+dsh --version        # 首次运行会从 Release 下载约 133 MB 运行时并校验 sha256
+```
+
+- npm 12 默认拦截 `postinstall`；审批脚本后可在安装时直接下载：
+  `npm install-scripts approve termux-dsh` 再重装
+- dev 构建：`npm i -g termux-dsh@next`
+- 下载走 GitHub Release；需要镜像时设
+  `TDSH_RELEASE_BASE=https://<镜像>/releases/download`
+- 卸载：`npm uninstall -g termux-dsh`
+
 ## 1.1 单文件 .deb（可选）
 
 Release 若附带 `dsh-termux_<version>_aarch64.deb`，可跳过 clone/bootstrap 直接安装：

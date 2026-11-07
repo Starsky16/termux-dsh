@@ -10,3 +10,5 @@
 - [ ] **会话持久化**：新建会话 → 发一条消息 → 重启 `dsh web` → 会话仍在且可打开（验证 B5 `rename` 发布）。
 - [ ] **插件安装（可选）**：`dsh plugin add <包>` 完成后重启，页面正常；若安装把 pristine `@deepseek-ai/*` 拉进 profile 树，再跑 `bash patches/apply.sh --apply` 并重启。
 - [ ] **HMR 降级**：修改 profile 的 `cordis.patch.yml` 后不重启，页面不崩；插件操作返回 `restart-required`/`no-hmr` 属预期（Termux 上 HMR 被禁用）。
+- [ ] **npm 包端到端**：`npm i -g termux-dsh` → `termux-fix-shebang "$PREFIX/bin/dsh"` → `dsh --version`
+      首次运行应自动下载并输出正确版本；`DSH_PKG="$PREFIX/lib/node_modules/termux-dsh/runtime" bash "$PREFIX/lib/node_modules/termux-dsh/share/verify.sh"` 全 PASS。

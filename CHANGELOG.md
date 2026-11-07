@@ -12,6 +12,13 @@
 
 ## [0.2.2-rc.1-tdsh.1] — 2026-11-07
 
+### Added
+
+- npm 分发：`npm i -g termux-dsh` 安装器包（bootstrapper），运行时按版本从 Release
+  下载并校验 sha256；CI 用 Trusted Publishing（OIDC）发布，不保存长期 token，
+  `latest` ← main、`next` ← dev。npm 12 会拦 `postinstall`，安装后跑一次
+  `termux-fix-shebang`，首次启动自动补下载。
+
 ### Changed
 
 - 上游基线 `0.2.1-rc.5` → `0.2.2-rc.1`；`patches/manifest.json` 全部 A 类锚点按新版重新生成。

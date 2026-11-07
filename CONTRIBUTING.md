@@ -121,6 +121,10 @@ DSH_HOME=/tmp/tdsh-empty bash patches/apply.sh --check
    `apt install --reinstall --allow-downgrades`）并跑 `dsh-termux-verify`。
 4. 发布步骤已内置 `--target "$GITHUB_SHA"`、按 ref 自动区分正式/预发布；
    改动发布策略时同步更新本节与 `docs/architecture.md`。
+5. npm 发布在 Release 之后执行（`Publish to npm`）：`main` → `latest`、其它分支 → `next`，
+   凭据走 Trusted Publishing（OIDC），失败会让 job 失败但已发的 Release 不回收。
+   该步骤由仓库变量 `NPM_PUBLISH_ENABLED=true` 开启；改 workflow 文件名需同步更新
+   npm 包设置里的 trusted publisher。
 
 ## 报告问题
 

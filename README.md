@@ -34,6 +34,19 @@ dsh 官方只发 npm 包，没有适配 Android：原生模块（koffi、node-pt
 
 ## 快速开始
 
+**方式零：npm（熟悉 npm 的用户）**
+
+```bash
+npm i -g termux-dsh
+termux-fix-shebang "$PREFIX/bin/dsh" "$PREFIX/bin/termux-dsh"
+dsh --version
+```
+
+npm 包只是安装器：运行时按版本从 GitHub Release 下载并校验 sha256，首次启动会自动补下载
+（约 133 MB）。npm 12 默认拦截 `postinstall`，所以需要手动跑一次 `termux-fix-shebang`；
+若你愿意审批脚本（`npm install-scripts approve termux-dsh`），安装时就会先下载好。
+dev 构建用 `npm i -g termux-dsh@next`；非 Termux/arm64 环境会拒绝安装。
+
 **方式一（推荐）：一条命令自动安装**
 
 ```bash
@@ -92,7 +105,8 @@ bash verify.sh  # 在仓库目录执行；结果应为：全部 PASS
 卸载（按安装方式二选一）：
 
 ```bash
-npm uninstall -g dsh-termux   # 方式一装的
+npm uninstall -g termux-dsh   # 方式零（npm 包）装的
+npm uninstall -g dsh-termux   # 方式一（bootstrap 的 tarball）装的
 dpkg -r dsh-termux            # 方式二装的（会一并移除 ~/bin/dsh）
 ```
 

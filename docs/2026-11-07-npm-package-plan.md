@@ -478,10 +478,14 @@ node npm/make-package.mjs dist/npm 0.2.2-rc.1-tdsh.1
 REPO="$PWD"
 TMPD="$(mktemp -d)"
 cd "$TMPD" && npm init -y >/dev/null 2>&1
-TDSH_NPM_SKIP_PLATFORM_CHECK=1 npm i --foreground-scripts "file:$REPO/dist/npm" 2>&1 | tail -20
+npm i "file:$REPO/dist/npm" 2>&1 | tail -5
+node node_modules/termux-dsh/bin/install.mjs 2>&1 | tail -5
 ls -d node_modules/termux-dsh/runtime/lib/bin.js && echo RUNTIME_OK
 ```
-Expected: 日志出现 `下载 … 运行时`、`安装完成`，最后输出 `RUNTIME_OK`
+Expected: npm 12 会拦 postinstall（正常），手动执行 install 后出现 `安装完成` 与 `RUNTIME_OK`。
+
+> 实测补充：`file:` 安装是软链，要验证真实安装请用 `npm pack` 出的 tgz；
+> 且 npm 12 的 `.bin` 是 symlink，需 `termux-fix-shebang` 或由 cli 兜底下载。
 
 - [ ] **Step 2: 验证 bin 与版本**
 
@@ -543,7 +547,8 @@ permissions:
           ( cd dist/npm && npm pack --dry-run >/dev/null )
 
       - name: Publish to npm
-        if: ${{ inputs.dry_run != true }}
+        # 配置 Trusted Publishing 后把仓库变量 NPM_PUBLISH_ENABLED 置为 true 才发布
+        if: ${{ inputs.dry_run != true && vars.NPM_PUBLISH_ENABLED == 'true' }}
         env:
           NPM_CONFIG_PROVENANCE: "true"
         run: |

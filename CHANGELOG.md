@@ -10,7 +10,7 @@
   `gh release create` 已去掉 `--prerelease` 并加 `--target "$GITHUB_SHA"`；
   版本号仍保留上游 `rc` 段。
 
-## [0.2.2-rc.3-tdsh.1] — 待发布
+## [0.2.2-rc.3-tdsh.1] — 2026-11-14
 
 ### Changed
 
@@ -25,7 +25,11 @@
 
 - A 类 7 文件按 manifest 全量应用，哈希全匹配；B5、koffi×3、node-pty 锚点 dry-run 通过。
 - B10 在 rc.3 树上实测：`dsh --version` 输出 `0.2.2-rc.3-tdsh.1`。
-- 待办：CI 构建与真机 `dsh-termux-verify`。
+- CI：dry-run `43579331105` 与发布 `43579729022` 全绿（A1–A7、B5/B10、原生件、deb/tar 校验）。
+- 真机（vivo iPA2575 / Android 16）：deb 安装成功、`dsh --version` 正确、
+  `dsh-termux-verify` 全项 PASS、`dsh web --no-open --port 0` 冒烟启动正常。
+- 注意：rc.3 依赖膨胀，产物 tarball 261 MB / deb 108 MB（rc.1 为 133 MB / 42 MB），
+  安装后运行时约 1.5 GB。
 
 ## [0.2.2-rc.1-tdsh.1] — 2026-11-07
 

@@ -11,10 +11,12 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/platform-Termux%20arm64-informational)
 
-> **当前状态（2026-11-07）**：`v0.2.2-rc.1-tdsh.1` 已在 Termux 真机验证通过
+> **当前状态（2026-11-14）**：`v0.2.2-rc.3-tdsh.1` 已在 Termux 真机验证通过
 > （vivo iPA2575 / Android 16 / aarch64）：CI 构建全绿、`dsh-termux-verify` 全项 PASS、
 > `dsh web` 冒烟启动正常。上游 `0.2.2-rc.3` 仍无稳定版，但本仓 `main` 的构建直接作为
 > 正式 Release（Latest）发布，版本号保留上游 `rc` 段。
+>
+> rc.3 依赖膨胀：安装包约 261 MB（deb 108 MB），安装后运行时约 1.5 GB，请预留 **2 GB** 磁盘。
 
 ## 它解决什么问题
 
@@ -29,7 +31,7 @@ dsh 官方只发 npm 包，没有适配 Android：原生模块（koffi、node-pt
 ## 环境要求
 
 - Termux **原生** aarch64（非 proot）；Android 8 及以上。
-- 约 1 GB 可用磁盘；首次安装约 8–9 分钟（下载 120 MB 安装包，之后不再联网拉依赖）。
+- 约 **2 GB** 可用磁盘；首次安装 10–20 分钟（rc.3 起安装包 261 MB / deb 108 MB，取决于网络）。
 - 其余依赖（Node.js、git、curl、ripgrep 等）安装脚本会自动补齐。
 
 ## 快速开始

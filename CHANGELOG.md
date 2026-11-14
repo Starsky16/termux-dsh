@@ -10,7 +10,7 @@
   `gh release create` 已去掉 `--prerelease` 并加 `--target "$GITHUB_SHA"`；
   版本号仍保留上游 `rc` 段。
 
-## [0.2.2-rc.3-tdsh.2] — 待发布
+## [0.2.2-rc.3-tdsh.2] — 2026-11-14
 
 ### Fixed
 
@@ -18,6 +18,13 @@
   （`name: "@deepseek-ai/dsh"`、`version: <upstream>`、`type: module`），
   `verify-package.sh` / `verify-deb.sh` 断言三项一致。此前该垫片是手工放置的 rc.1 内容，
   导致插件（如插件市场、`ds-harness-remote`）读到的宿主版本一直停在 rc.1。
+
+### Verified
+
+- CI：dry-run `43582171802` 与发布 `43582626704` 全绿；tarball 与 deb 的
+  `version shim name/0.2.2-rc.3/type=module` 三项断言均 PASS。
+- 真机：安装 `0.2.2-rc.3-tdsh.2` 后 `dsh --version` 正确，包内 `lib/package.json`
+  由构建生成（`version: 0.2.2-rc.3`），`dsh-termux-verify` 全项 PASS。
 
 ## [0.2.2-rc.3-tdsh.1] — 2026-11-14
 

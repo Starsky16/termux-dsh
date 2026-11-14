@@ -8,10 +8,10 @@
 
 | 项 | 值 |
 |---|---|
-| 上游基座 | 官方 npm 包 `@deepseek-ai/dsh@0.2.2-rc.1`（CI 跟随 latest，见下） |
+| 上游基座 | 官方 npm 包 `@deepseek-ai/dsh@0.2.2-rc.3`（CI 跟随 latest，见下） |
 | 补丁生成时锁定的依赖 | `koffi@3.1.1`（`dsh-fs-local` 固定）、`node-pty@1.2.0-beta.15`（`dsh-subprocess-local` 固定） |
-| A 类目标文件 | 按 `0.2.2-rc.1` 重新锚定（2026-11-07 实测）；0.2.1-rc.5 的旧锚点已失效 |
-| 产物版本 | `<upstream>-tdsh.<rev>`，例如 `0.2.2-rc.1-tdsh.1` |
+| A 类目标文件 | 按 `0.2.2-rc.3` 重新锚定（2026-11-14 实测，rc.2/rc.3 一致）；rc.1 的旧锚点已失效 |
+| 产物版本 | `<upstream>-tdsh.<rev>`，例如 `0.2.2-rc.3-tdsh.1` |
 
 **CI 跟 latest 的策略**：`repack.yml` 每次手动 dispatch 时解析 `@deepseek-ai/dsh@latest`，
 再对每个 target 做 **pristine 哈希 / 锚点断言**。任一断言失败 → 构建非 0 → 不发布
@@ -63,7 +63,7 @@ B 类补丁在 `repack/native/*.sh` 里对下载的源码副本执行，**不发
 | B7 | koffi 原生构建 | 构建步骤 | NDK toolchain + `cnoke.cjs -t android_arm64 --release`，API 24 / arm64-v8a；libc++ 静态链接（与 koffi 官方 Android 预编译一致，避免运行时 `libc++_shared.so` 依赖） | `repack/native/koffi.sh` |
 | B8 | node-pty 原生构建 | 构建步骤 | Node headers + `node-gyp rebuild --arch=arm64 --nodedir=...`，CC/CXX/AR/LD/RANLIB 指向 NDK；产物入 `prebuilds/android-arm64/pty.node` | `repack/native/node-pty.sh` |
 | B9 | esbuild / sharp | 平台件 | 显式装 `@esbuild/android-arm64@<ver>`；sharp 走 `@img/sharp-wasm32@<ver>` + `@emnapi/runtime`（native 平台包无 Android 条目） | `repack/platforms.sh` |
-| B10 | `@deepseek-ai/dsh/lib/bin.js` | 源码补丁 | `dsh --version` 原本读 `dsh-app-boot/package.json`（上游版本）；重打包后改读根 `dsh-termux/package.json` 的 `version`，只影响显示，插件兼容性仍用上游 runtime version | `platform/tdsh-version.patch` |
+| B10 | `@deepseek-ai/dsh/lib/bin-*.js` | **构建期脚本** | `dsh --version` 原本读 `dsh-app-boot/package.json`（上游版本）；上游 0.2.2-rc.2 起拆成 `bin.js` + `bin-<hash>.js`，hash 文件名会漂移，故改用 `repack/b10-version.mjs` 扫描并替换版本读取为优先读根 `dsh-termux/package.json`，只影响显示，插件兼容性仍用上游 runtime version（原 `platform/tdsh-version.patch` 已删除） | `repack/b10-version.mjs` |
 
 > **B5 为什么不能漏**：官方 npm 包没有向日葵构建期那层 `rename` 兜底。Android 上
 > `link(2)` 被 SELinux 拒绝，首次会话创建就会失败。
@@ -83,8 +83,8 @@ B 类补丁在 `repack/native/*.sh` 里对下载的源码副本执行，**不发
 ```bash
 # 1) 取 pristine（版本与 manifest.base 一致）
 mkdir -p /tmp/base && cd /tmp/base
-npm pack "@deepseek-ai/dsh-fs-local@0.2.2-rc.1"
-mkdir -p pkg && tar -xzf deepseek-ai-dsh-fs-local-0.2.2-rc.1.tgz -C pkg --strip-components=1
+npm pack "@deepseek-ai/dsh-fs-local@0.2.2-rc.3"
+mkdir -p pkg && tar -xzf deepseek-ai-dsh-fs-local-0.2.2-rc.3.tgz -C pkg --strip-components=1
 
 # 2) 对比 patches/core/fs-local.patch 的 b 侧，确认仍是预期修改
 #    b 侧可先 `git apply` 到 pkg，再与仓库内维护的 patched 副本比对

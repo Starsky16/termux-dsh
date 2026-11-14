@@ -8,12 +8,12 @@
 - `dev`：开发分支。
 - `main`：默认分支 / 发布分支（2026-10-31 起）；正式版从这里出。
 - `main` 只随已验证版本推进；`dev` 可以领先。上游 `@deepseek-ai/dsh` 尚无稳定版
-  （latest = `0.2.2-rc.1`），版本规则 `<upstream>-tdsh.<rev>`；**本仓 `main` 的构建直接
+  （latest = `0.2.2-rc.3`），版本规则 `<upstream>-tdsh.<rev>`；**本仓 `main` 的构建直接
   作为正式 Release（Latest）发布**，版本号保留上游 `rc` 段以标明基座，不冒充上游稳定版。
 - **两条发布通道**（2026-11-07 起，按 dispatch 的 ref 自动判定）：
   - `main` → 正式 Release（Latest），版本 `<upstream>-tdsh.<rev>`；
   - 其它分支（`dev` 等）→ **pre-release dev build**，版本追加 `-dev.<run_number>`，
-    形如 `0.2.2-rc.1-tdsh.1-dev.42`，标签同名；`bootstrap.sh` 解析最新 tag 时会跳过
+    形如 `0.2.2-rc.3-tdsh.1-dev.42`，标签同名；`bootstrap.sh` 解析最新 tag 时会跳过
     `-dev.`，所以 dev 构建不会被用户自动装上。
 - 发版不变式：发正式版时 **dev = main = tag = 构建源**。发布步骤已内置
   `--target "$GITHUB_SHA"`（tag 固定到本次 run 的 commit，不会落在创建时的 main HEAD）；
@@ -112,7 +112,7 @@ DSH_HOME=/tmp/tdsh-empty bash patches/apply.sh --check
    平铺参数——inputs 必须嵌套在 `inputs` 键下，平铺会报 422 "not permitted keys"**）：
    - `--ref`：正式版用 `main`；想先出 **dev build** 就用 `dev`（自动 `--prerelease`
      且版本带 `-dev.<run>`，见「分支与发布口径」）；
-   - `upstream_version`：留空 = latest；建议显式锁定已验证版本（如 `0.2.2-rc.1`）；
+   - `upstream_version`：留空 = latest；建议显式锁定已验证版本（如 `0.2.2-rc.3`）；
    - `rev`：同一上游版本的修订号；
    - `dry_run=false`（只想看构建是否通过就设 `true`，只出 artifact 不发 Release）。
 3. 发布后核对：附件齐全（tarball + deb + 两份 sha256）且与 `.size`/sha256 对齐、

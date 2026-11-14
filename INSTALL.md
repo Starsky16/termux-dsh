@@ -148,7 +148,7 @@ git -C ~/code/termux-dsh pull --ff-only
 bash ~/code/termux-dsh/bootstrap.sh
 ```
 
-重组包版本形如 `0.2.2-rc.1-tdsh.1`，与上游 `-termux.` 包明确区分。
+重组包版本形如 `0.2.2-rc.3-tdsh.1`，与上游 `-termux.` 包明确区分。
 升级后 `verify.sh` 仍须全 PASS；不绿就不要继续使用。
 
 ## 5. 回滚

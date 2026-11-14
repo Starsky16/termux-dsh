@@ -87,7 +87,11 @@ check_grep "$PKG/node_modules/@deepseek-ai/dsh-session-persistence-jsonl/lib/ind
 
 # B10: `dsh --version` must report the repack version, not the upstream
 # dsh-app-boot version. The unpacked package root is dsh-termux.
-check_grep "$PKG/lib/bin.js" 'manifest.name === "dsh-termux"' "B10 CLI version"
+if grep -rq 'manifest.name === "dsh-termux"' "$PKG/lib"; then
+  pass "B10 CLI version"
+else
+  bad "B10 CLI version"
+fi
 
 # No host binaries may ride along (they would make the tarball look valid while
 # failing at runtime on the phone).

@@ -115,10 +115,10 @@ info "  B5 session rename OK"
 
 DSHMETA="$BUILD/node_modules/@deepseek-ai/dsh"
 [[ -d "$DSHMETA" ]] || die "缺 @deepseek-ai/dsh"
-( cd "$DSHMETA" && patch -p1 --forward --batch --dry-run < "$ROOT/patches/platform/tdsh-version.patch" ) \
-  || die "B10 锚点不匹配"
-( cd "$DSHMETA" && patch -p1 --forward --batch < "$ROOT/patches/platform/tdsh-version.patch" )
-grep -q 'manifest.name === "dsh-termux"' "$DSHMETA/lib/bin.js" || die "B10 未生效"
+# B10：上游 0.2.2-rc.2 起 CLI 拆成 bin.js + bin-<hash>.js，patch 锚点会随 hash
+# 漂移，故用脚本替换（扫描 bin chunk，把版本读取改成优先读包根 package.json）。
+node "$HERE/b10-version.mjs" "$DSHMETA" || die "B10 失败：版本锚点未找到"
+grep -rq 'manifest.name === "dsh-termux"' "$DSHMETA/lib" || die "B10 未生效"
 info "  B10 CLI version OK"
 
 # 3) Platform-specific optional packages.

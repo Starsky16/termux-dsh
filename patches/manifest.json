@@ -1,11 +1,12 @@
 {
   "base": {
-    "upstream": "0.2.2-rc.1",
+    "upstream": "0.2.2-rc.3",
     "verified_against": [
-      "0.2.2-rc.1"
+      "0.2.2-rc.2",
+      "0.2.2-rc.3"
     ],
-    "note": "CI 跟随 @deepseek-ai/dsh@latest；A 类目标文件在 0.2.2-rc.1 实测通过。pristine/patched 哈希或补丁锚点任一不匹配即视为漂移，CI 不发布。0.2.2 起 web-fetch-http 移除了公网 IP/SSRF 校验与 allowBenchmarkAddresses，原 A6 补丁随之退役。",
-    "generated": "2026-11-07"
+    "note": "CI 跟随 @deepseek-ai/dsh@latest；A 类目标文件在 0.2.2-rc.2/rc.3 逐字节一致（2026-11-14 实测）。pristine/patched 哈希或补丁锚点任一不匹配即视为漂移，CI 不发布。0.2.2 起 web-fetch-http 移除 SSRF 校验，原 A6 补丁退役。",
+    "generated": "2026-11-14"
   },
   "targets": [
     {
@@ -38,8 +39,8 @@
       "patch": "core/fs-local.patch",
       "pkg": "@deepseek-ai/dsh-fs-local",
       "rel": "lib/index.js",
-      "pristine_sha256": "d6d3115d4584a236746929d654ede98a0bc365fa4247567ba110971657fd7f90",
-      "patched_sha256": "843218ad2d57f99dcc3d1b2334b51a8c2e0f569ac8c65dfac6bd37dbcec163a9"
+      "pristine_sha256": "610a3ba3658e55adaa3d8d21e017eb6787860adf317e889fb361e8802c8f5a13",
+      "patched_sha256": "e090078af37319a4cafdf8237754c0d302cbe14656c34595ea4ec296ba45ed41"
     },
     {
       "section": "core",
@@ -62,8 +63,8 @@
       "patch": "core/sandbox-local.patch",
       "pkg": "@deepseek-ai/dsh-sandbox-local",
       "rel": "lib/index.js",
-      "pristine_sha256": "4399dae3ca786b032d232bda094f3f395c151f0258b1373e640eb4ba0d04ba3f",
-      "patched_sha256": "6cca17bc927726ec0e5c9281a4b7862378fc6132f81efeb8467229a8aab0ec99"
+      "pristine_sha256": "3557bb25aaabd8c860055b767aeede31b5cd41600c37d2e5fda361e209705eb1",
+      "patched_sha256": "2242a5aa02369c36f60a579df84d23eda014e1074aed41a492cd26733e531e3e"
     }
   ]
 }

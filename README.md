@@ -13,7 +13,7 @@
 
 > **当前状态（2026-11-07）**：`v0.2.2-rc.1-tdsh.1` 已在 Termux 真机验证通过
 > （vivo iPA2575 / Android 16 / aarch64）：CI 构建全绿、`dsh-termux-verify` 全项 PASS、
-> `dsh web` 冒烟启动正常。上游 `0.2.2-rc.1` 仍无稳定版，但本仓 `main` 的构建直接作为
+> `dsh web` 冒烟启动正常。上游 `0.2.2-rc.3` 仍无稳定版，但本仓 `main` 的构建直接作为
 > 正式 Release（Latest）发布，版本号保留上游 `rc` 段。
 
 ## 它解决什么问题
@@ -91,7 +91,7 @@ dsh web
 ## 验证安装
 
 ```bash
-dsh --version   # 应输出与所装包一致的 <上游版本>-tdsh.<rev>，如 0.2.2-rc.1-tdsh.1
+dsh --version   # 应输出与所装包一致的 <上游版本>-tdsh.<rev>，如 0.2.2-rc.3-tdsh.1
 bash verify.sh  # 在仓库目录执行；结果应为：全部 PASS
 ```
 
@@ -121,7 +121,7 @@ dpkg -r dsh-termux            # 方式二装的（会一并移除 ~/bin/dsh）
 
 ## 已知限制
 
-- 上游最新是 `0.2.2-rc.1`（仍为候选版）；本仓 `main` 的构建直接作为**正式 Release（Latest）**发布，
+- 上游最新是 `0.2.2-rc.3`（仍为候选版）；本仓 `main` 的构建直接作为**正式 Release（Latest）**发布，
   版本号保留上游的 `rc` 段以标明基座，不冒充上游稳定版。
 - **HMR（热重载）在 Termux 上禁用**；修改配置/插件后需重启 `dsh web`。
 - 图像处理走 wasm 版 sharp（不是 Android 原生包）；常用读图已在真机验证，

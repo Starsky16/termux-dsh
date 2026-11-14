@@ -10,6 +10,23 @@
   `gh release create` 已去掉 `--prerelease` 并加 `--target "$GITHUB_SHA"`；
   版本号仍保留上游 `rc` 段。
 
+## [0.2.2-rc.3-tdsh.1] — 待发布
+
+### Changed
+
+- 上游基线 `0.2.2-rc.1` → `0.2.2-rc.3`（rc.2 与 rc.3 的 A 类目标文件逐字节一致，一次适配覆盖两版）。
+- A2 `fs-local`、A5 `sandbox-local`：上游代码有改动，补丁经 fuzz 2 / 偏移应用，
+  语义落点已逐处核对；pristine/patched 哈希更新。
+- B10 改为构建期脚本 `repack/b10-version.mjs`：上游 0.2.2-rc.2 起把 CLI 拆成
+  `lib/bin.js`（re-export 壳）+ `lib/bin-<hash>.js`，patch 锚点随 hash 漂移不可持续；
+  原 `patches/platform/tdsh-version.patch` 删除，`verify-package.sh` 改为在 `lib/` 下检索。
+
+### Verified
+
+- A 类 7 文件按 manifest 全量应用，哈希全匹配；B5、koffi×3、node-pty 锚点 dry-run 通过。
+- B10 在 rc.3 树上实测：`dsh --version` 输出 `0.2.2-rc.3-tdsh.1`。
+- 待办：CI 构建与真机 `dsh-termux-verify`。
+
 ## [0.2.2-rc.1-tdsh.1] — 2026-11-07
 
 ### Added

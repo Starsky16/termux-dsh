@@ -9,7 +9,7 @@
 `repack/repack.sh`：
 
 1. `npm install --os=android --cpu=arm64 --ignore-scripts @deepseek-ai/dsh@<ver>`；
-2. 按 `patches/manifest.json` 打 A 类宿主补丁，再打 B5 / B10；
+2. 按 `patches/manifest.json` 打 A 类宿主补丁，再打 B5、跑 B10 脚本（版本显示替换）；
 3. `repack/platforms.sh` 补 esbuild（若存在）与 `@img/sharp-wasm32` + `@emnapi/runtime`；
 4. `repack/native/*.sh` 用 NDK 交叉编译：
    - koffi（CMake / cnoke，`android_arm64`，`c++_static`）

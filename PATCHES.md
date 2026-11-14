@@ -76,6 +76,22 @@ B 类补丁在 `repack/native/*.sh` 里对下载的源码副本执行，**不发
 
 ---
 
+## 版本身份垫片（构建产物，不是补丁）
+
+组装阶段在包内写 `lib/package.json`：
+
+```json
+{ "name": "@deepseek-ai/dsh", "version": "<upstream>", "type": "module", "private": true }
+```
+
+**为什么**：`ds-harness-remote` 等插件只认 `package.json` 里 `name === "@deepseek-ai/dsh"`
+的 manifest 来判定 Harness 版本；本仓根包名是 `dsh-termux`，插件会跳过它 → 版本 `undefined`
+→ 判定 legacy 协议，且插件市场显示旧版本。垫片让插件读到真实上游版本。
+
+**必须由构建生成**：`repack/repack.sh` 用 `$UPSTREAM` 写入，`verify-package.sh` /
+`verify-deb.sh` 断言 `name` / `version` / `type` 三项；不要手工维护（历史上手工放的
+rc.1 垫片导致插件市场长期显示旧版本）。
+
 ## 重生成方法
 
 ### A 类（宿主 JS）

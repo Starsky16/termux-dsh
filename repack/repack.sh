@@ -165,6 +165,19 @@ for entry in "$BUILD/node_modules"/* "$BUILD/node_modules"/.bin; do
   fi
 done
 
+# 版本身份垫片：插件（如 ds-harness-remote）只认 name === "@deepseek-ai/dsh" 的
+# manifest，我们的根包名是 dsh-termux，不放这个垫片它们就读不到上游版本。
+# 必须随上游版本生成，否则插件市场会一直显示旧版本。
+cat >"$PKGDIR/lib/package.json" <<EOF
+{
+  "name": "@deepseek-ai/dsh",
+  "version": "$UPSTREAM",
+  "type": "module",
+  "private": true,
+  "description": "Version identity shim (termux-dsh): upstream Harness release this repack was built from."
+}
+EOF
+
 node - "$PKGDIR/package.json" "$VER" "$UPSTREAM" "$REV" "$NODE_TARGET_VERSION" "$NDK" <<'NODE'
 const fs = require("fs");
 const [file, ver, upstream, rev, nodeVersion, ndk] = process.argv.slice(2);

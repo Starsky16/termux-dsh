@@ -10,6 +10,15 @@
   `gh release create` 已去掉 `--prerelease` 并加 `--target "$GITHUB_SHA"`；
   版本号仍保留上游 `rc` 段。
 
+## [0.2.2-rc.3-tdsh.2] — 待发布
+
+### Fixed
+
+- **版本身份垫片入构建**：`repack/repack.sh` 组装时生成 `lib/package.json`
+  （`name: "@deepseek-ai/dsh"`、`version: <upstream>`、`type: module`），
+  `verify-package.sh` / `verify-deb.sh` 断言三项一致。此前该垫片是手工放置的 rc.1 内容，
+  导致插件（如插件市场、`ds-harness-remote`）读到的宿主版本一直停在 rc.1。
+
 ## [0.2.2-rc.3-tdsh.1] — 2026-11-14
 
 ### Changed

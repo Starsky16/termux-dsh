@@ -57,6 +57,22 @@ GOT_VER="$(jsonval "$PKG/package.json" version)"
 [[ ! -e "$PKG/node_modules/@deepseek-ai/dsh" ]] \
   && pass "bundled runtime excludes @deepseek-ai/dsh" || bad "tarball 内仍有 @deepseek-ai/dsh"
 
+# 版本身份垫片：插件（ds-harness-remote 等）只认 name === "@deepseek-ai/dsh"，
+# 缺失或版本没跟上会导致插件市场显示旧版本。
+UPSTREAM_VER="${VER%-tdsh.*}"
+SHIM="$PKG/lib/package.json"
+if [[ -f "$SHIM" ]]; then
+  [[ "$(jsonval "$SHIM" name)" == "@deepseek-ai/dsh" ]] \
+    && pass "version shim name" || bad "version shim name: $(jsonval "$SHIM" name)"
+  SHIM_VER="$(jsonval "$SHIM" version)"
+  [[ "$SHIM_VER" == "$UPSTREAM_VER" ]] \
+    && pass "version shim $SHIM_VER" || bad "version shim: $SHIM_VER != $UPSTREAM_VER"
+  [[ "$(jsonval "$SHIM" type)" == "module" ]] \
+    && pass "version shim type=module" || bad "version shim 缺 type=module"
+else
+  bad "version shim missing ($SHIM)"
+fi
+
 # Native payloads
 KOFFI="$PKG/node_modules/koffi/build/koffi/android_arm64/koffi.node"
 PTY="$PKG/node_modules/node-pty/prebuilds/android-arm64/pty.node"

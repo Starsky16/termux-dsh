@@ -47,6 +47,18 @@ if [[ -f "$RUNTIME/package.json" ]]; then
   [[ "$GOT_RUNTIME_VER" == "$RUNTIME_VER" ]] && pass "runtime version" || bad "runtime version: $GOT_RUNTIME_VER != $RUNTIME_VER"
 fi
 
+# 版本身份垫片（与 tarball 校验对齐）
+SHIM="$RUNTIME/lib/package.json"
+if [[ -f "$SHIM" ]]; then
+  SHIM_NAME="$(node -e 'process.stdout.write(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).name)' "$SHIM")"
+  SHIM_VER="$(node -e 'process.stdout.write(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).version)' "$SHIM")"
+  UPSTREAM_VER="${RUNTIME_VER%%-tdsh.*}"
+  [[ "$SHIM_NAME" == "@deepseek-ai/dsh" ]] && pass "version shim name" || bad "version shim name: $SHIM_NAME"
+  [[ "$SHIM_VER" == "$UPSTREAM_VER" ]] && pass "version shim $SHIM_VER" || bad "version shim: $SHIM_VER != $UPSTREAM_VER"
+else
+  bad "version shim missing ($SHIM)"
+fi
+
 check_no_libcxx() {
   local file="$1" label="$2"
   if ! command -v readelf >/dev/null 2>&1; then return 0; fi

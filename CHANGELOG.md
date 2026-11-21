@@ -3,6 +3,16 @@
 本仓版本规则：`<upstream-dsh-version>-tdsh.<rev>`。上游当前为 `0.2.2-rc.1`，
 所有 Release 都保留上游的 `rc` 段；本仓**不冒充上游稳定版**。
 
+## [归档] — 2026-11-21
+
+- **仓库归档（GitHub public archive，只读）**：唯一消费者 `iPA2575` 已将运行层从
+  Termux + `dsh-termux` 迁至 DSHBox（PRoot Debian + 上游 dsh），本仓无使用场景；
+  上游基线停在 `0.2.2-rc.3`（rc.4 / rc.5 未跟进）。CI repack 随归档停跑。
+- 最后产物 `v0.2.2-rc.3-tdsh.2`（tarball + deb）保持可下载，老 Termux 环境仍可安装。
+- README 新增「归档时未完成」：wrapper 性能、补丁面 7→5 收敛、Android 16 硬链接兜底、
+  L2 去留判定、npm 自动发布等未落地事项逐条留档。
+- 不发布新版本；公共 npm 包 `termux-dsh@0.2.2-rc.1-tdsh.1` 未再更新，亦未弃用。
+
 ## Unreleased
 
 - 等 `@deepseek-ai/dsh` 发布稳定版后，从 `main` 发 `0.2.1-tdsh.1`（或对应上游版本）。

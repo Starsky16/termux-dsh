@@ -1,5 +1,10 @@
 # termux-dsh
 
+> ⚠️ **已归档（2026-11-21，GitHub 只读）**：唯一的 Termux 使用者（`iPA2575`）已把运行层迁到
+> **DSHBox（PRoot Debian + 上游 dsh）**，本仓停止维护。最后一个产物 `v0.2.2-rc.3-tdsh.2`
+> （tarball 与 deb）仍可正常下载，老 Termux 环境可照旧安装；上游基线停在 `0.2.2-rc.3`，
+> rc.4 / rc.5 未跟进。**归档时尚未完成的事项见文末「归档时未完成」**。
+
 在 **Termux / Android arm64** 上一条命令装好 [dsh](https://github.com/deepseek-ai/deepseek-harness)。
 
 它不是 dsh 的 fork，也不是搬运别人编译好的产物：本仓维护一条自动构建流水线，
@@ -11,7 +16,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Platform](https://img.shields.io/badge/platform-Termux%20arm64-informational)
 
-> **当前状态（2026-11-14）**：`v0.2.2-rc.3-tdsh.1` 已在 Termux 真机验证通过
+> **归档前状态（2026-11-14，历史）**：`v0.2.2-rc.3-tdsh.1` 已在 Termux 真机验证通过
 > （vivo iPA2575 / Android 16 / aarch64）：CI 构建全绿、`dsh-termux-verify` 全项 PASS、
 > `dsh web` 冒烟启动正常。上游 `0.2.2-rc.3` 仍无稳定版，但本仓 `main` 的构建直接作为
 > 正式 Release（Latest）发布，版本号保留上游 `rc` 段。
@@ -131,6 +136,41 @@ dpkg -r dsh-termux            # 方式二装的（会一并移除 ~/bin/dsh）
 - 插件适配不在本仓范围；插件升级若把官方原包拉进 profile，需按
   [`CONTRIBUTING.md`](CONTRIBUTING.md) 重跑补丁脚本。
 - 本仓不生成 Flutter / WPF / WinRT 产物，也不承担这些工具链。
+
+## 归档时未完成（2026-11-21）
+
+归档原因是运行层迁移，而非技术失败，所以下列事项**没有做完、留档备查**。对应计划与交接文件在
+`workflow-sync` 仓库内（plan 已随归档标作废）。
+
+### 计划内：补丁面收敛与 wrapper 性能（`plans/2026-11-15-termux-dsh补丁面收敛与wrapper性能-impl.md`）
+
+- **wrapper 性能**：`~/bin/dsh` 仍每次启动跑 `npm root -g`（实测 617 ms）与
+  `node selfcheck.mjs`（430 ms，相对裸调用多约 1 秒）；设计好的「编译期写死
+  `${PREFIX}/lib/node_modules` + selfcheck stamp 缓存」未落地。
+- **补丁面 7 → 5 未做**：`patches/core/ripgrep.patch` 未换成 `repack/platforms.sh` 里的伪造平台包
+  （`@vscode/ripgrep-android-arm64` 壳）；`patches/core/node-addon-system-softlock.patch`
+  （108 行软锁）未换成 koffi 绑定真 `flock(2)` 的极小补丁；`patches/manifest.json` 与
+  `repack/verify-package.sh` 的对应断言也未更新。
+
+### 交接内（`handoff/`）
+
+- `20261116-termux-dsh-fs-link-fallback-调研交接.md`（已作废）：Android 16 `/data` 禁硬链接的
+  **通用兜底未实现**——`lib/fs-link-fallback.cjs` 未加、wrapper 未注入 `NODE_OPTIONS=--require`，
+  因此 `ds-harness-remote` 只能停在 0.6.4（0.6.5 的 `publishExclusive` 用 `link()` 必失败），
+  上游 issue 也未提。
+- `20261114-dsh-compat-L2锚点适配dsh0.2.2-rc.3.md`：L2 加载器隔离补丁在 rc.3 上的
+  「保留 / 缩减 / 退役」未做判定；`dsh-compat` 的 `client.js` 锚点未重锚（本机已无该消费面）。
+- `20261107-termux-dsh-dsh版本身份垫片.md`：构建生成与双校验断言已完成，唯 T4 的
+  `harness.remote.v3` capabilities 证据未独立留档（Termux 侧日志已随环境删除）。
+
+### 记忆待办（`memory/repos/termux-dsh.md`）
+
+- **npm 自动发布未打通**：CI 的 OIDC 发布需 npm passkey 2FA + trusted publisher；
+  公共 npm 上的 `termux-dsh` 仍停在 `0.2.2-rc.1-tdsh.1`（旧于最后一个 Release），
+  且**未弃用**——建议补一条 `npm deprecate` 指向本仓归档说明。
+- CI 缺一条 `dsh web --no-open --port 0` 的端口存活冒烟（此前出现过静默回归）。
+- 插件安装（可选项）与 HMR 降级行为未验证。
+- 手机侧兼容软链 `~/code/dsh-termux-patches` 未纳入任何脚本（换机后需手工重建）。
 
 ## 文档
 

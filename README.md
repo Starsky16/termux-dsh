@@ -139,37 +139,34 @@ dpkg -r dsh-termux            # 方式二装的（会一并移除 ~/bin/dsh）
 
 ## 归档时未完成（2026-11-21）
 
-归档原因是运行层迁移，而非技术失败，所以下列事项**没有做完、留档备查**。对应计划与交接文件在
-`workflow-sync` 仓库内（plan 已随归档标作废）。
+归档原因是运行层迁移，而非技术失败，所以下列事项**没有做完**，记录备查。
 
-### 计划内：补丁面收敛与 wrapper 性能（`plans/2026-11-15-termux-dsh补丁面收敛与wrapper性能-impl.md`）
+### 构建与性能
 
-- **wrapper 性能**：`~/bin/dsh` 仍每次启动跑 `npm root -g`（实测 617 ms）与
-  `node selfcheck.mjs`（430 ms，相对裸调用多约 1 秒）；设计好的「编译期写死
-  `${PREFIX}/lib/node_modules` + selfcheck stamp 缓存」未落地。
+- **wrapper 性能**：`~/bin/dsh` 每次启动仍跑 `npm root -g`（实测 617 ms）与
+  `node selfcheck.mjs`（430 ms，相对裸调用多约 1 秒）；「编译期写死
+  `${PREFIX}/lib/node_modules` + selfcheck stamp 缓存」的方案未落地。
 - **补丁面 7 → 5 未做**：`patches/core/ripgrep.patch` 未换成 `repack/platforms.sh` 里的伪造平台包
   （`@vscode/ripgrep-android-arm64` 壳）；`patches/core/node-addon-system-softlock.patch`
   （108 行软锁）未换成 koffi 绑定真 `flock(2)` 的极小补丁；`patches/manifest.json` 与
   `repack/verify-package.sh` 的对应断言也未更新。
 
-### 交接内（`handoff/`）
+### 兼容性与验证
 
-- `20261116-termux-dsh-fs-link-fallback-调研交接.md`（已作废）：Android 16 `/data` 禁硬链接的
-  **通用兜底未实现**——`lib/fs-link-fallback.cjs` 未加、wrapper 未注入 `NODE_OPTIONS=--require`，
-  因此 `ds-harness-remote` 只能停在 0.6.4（0.6.5 的 `publishExclusive` 用 `link()` 必失败），
-  上游 issue 也未提。
-- `20261114-dsh-compat-L2锚点适配dsh0.2.2-rc.3.md`：L2 加载器隔离补丁在 rc.3 上的
-  「保留 / 缩减 / 退役」未做判定；`dsh-compat` 的 `client.js` 锚点未重锚（本机已无该消费面）。
-- `20261107-termux-dsh-dsh版本身份垫片.md`：构建生成与双校验断言已完成，唯 T4 的
-  `harness.remote.v3` capabilities 证据未独立留档（Termux 侧日志已随环境删除）。
-
-### 记忆待办（`memory/repos/termux-dsh.md`）
-
-- **npm 自动发布未打通**：CI 的 OIDC 发布需 npm passkey 2FA + trusted publisher；
-  公共 npm 上的 `termux-dsh` 仍停在 `0.2.2-rc.1-tdsh.1`（旧于最后一个 Release），
-  且**未弃用**——建议补一条 `npm deprecate` 指向本仓归档说明。
-- CI 缺一条 `dsh web --no-open --port 0` 的端口存活冒烟（此前出现过静默回归）。
+- **Android 16 硬链接兜底未实现**：`/data` 禁止 `link(2)`，本仓未加 `lib/fs-link-fallback.cjs`，
+  wrapper 也未注入 `NODE_OPTIONS=--require`，因此 `ds-harness-remote` 0.6.5 的 `publishExclusive`
+  会失败、只能停在 0.6.4；上游 issue 未提。
+- **L2 加载器隔离补丁未再判定**：随上游结构变化，`dsh-client-modules/lib/client.js` 的补丁锚点
+  未重锚，「保留 / 缩减 / 退役」未做结论（该补丁由姊妹仓维护，不在本仓）。
+- **版本身份垫片的 v3 证据未独立留档**：构建生成与双校验断言已完成，唯
+  `harness.remote.v3` capabilities 证据未留存。
 - 插件安装（可选项）与 HMR 降级行为未验证。
+
+### 发布与分发
+
+- **npm 自动发布未打通**：CI 的 OIDC 发布需 passkey 2FA + trusted publisher；公共 npm 上的
+  `termux-dsh` 仍停在 `0.2.2-rc.1-tdsh.1`（旧于最后一个 Release），且未弃用。
+- CI 缺一条 `dsh web --no-open --port 0` 的端口存活冒烟（此前出现过静默回归）。
 - 手机侧兼容软链 `~/code/dsh-termux-patches` 未纳入任何脚本（换机后需手工重建）。
 
 ## 文档

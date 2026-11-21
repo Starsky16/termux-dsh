@@ -174,6 +174,6 @@ wrapper 先调用 `~/code/dsh-compat/bin/selfcheck.mjs` 校验全局树 L2 补�
 - 未安装 `dsh-compat` 时完全跳过，不成为新依赖。
 - 回退：`rm -f ~/bin/dsh`；需要旧函数时从 `.zshenv.bak-selfcheck-*` 恢复。
 
-验证步骤与判据见
-`workflow-sync/handoff/20261101-dsh-compat-T7接线-termux-dsh.md` 与
-`workflow-sync/handoff/20261101-termux-dsh-T7B-wrapper.md`（B 方案真机）。
+验证判据：`dsh --version` 输出正常；`setsid` / `nohup` / `env` / `sh -c` 四路启动都会经过
+wrapper；`dsh-compat` 未就绪时自检只告警、不阻塞启动。均在 Termux 真机（Android 16 / aarch64）
+验证过。

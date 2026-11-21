@@ -41,7 +41,12 @@ dsh 官方只发 npm 包，没有适配 Android：原生模块（koffi、node-pt
 
 ## 快速开始
 
-**方式零：npm（熟悉 npm 的用户）**
+**方式零：npm（⚠️ 从未端到端验证，不推荐）**
+
+> ⛔ **这条渠道从来没有跑通过**：CI 的 OIDC 自动发布尝试过四次均告失败（npm 强制 passkey 2FA，
+> trusted publisher 未配成）；公共 npm 上只有 2026-11-07 手工发的一次
+> `0.2.2-rc.1-tdsh.1`，**没有任何安装回归记录**，包内仍是 rc.1 时代的内容（含后来已删除的补丁）。
+> 请改用方式一 / 方式二，或直接从 GitHub Release 下载。以下命令与说明仅作历史记录：
 
 ```bash
 npm i -g termux-dsh
@@ -52,10 +57,7 @@ dsh --version
 npm 包只是安装器：运行时按版本从 GitHub Release 下载并校验 sha256，首次启动会自动补下载
 （约 133 MB）。npm 12 默认拦截 `postinstall`，所以需要手动跑一次 `termux-fix-shebang`；
 若你愿意审批脚本（`npm install-scripts approve termux-dsh`），安装时就会先下载好。
-dev 构建用 `npm i -g termux-dsh@next`；非 Termux/arm64 环境会拒绝安装。
-
-> **npm 渠道当前暂缓自动发布**：首次版本 `0.2.2-rc.1-tdsh.1` 已上线，但后续版本不会
-> 自动同步（npm 强制 passkey 2FA，配置可信发布者受阻）。新版本请以 GitHub Release 为准。
+`npm i -g termux-dsh@next` 为 dev 构建；非 Termux/arm64 环境会拒绝安装。
 
 **方式一（推荐）：一条命令自动安装**
 
@@ -164,8 +166,9 @@ dpkg -r dsh-termux            # 方式二装的（会一并移除 ~/bin/dsh）
 
 ### 发布与分发
 
-- **npm 自动发布未打通**：CI 的 OIDC 发布需 passkey 2FA + trusted publisher；公共 npm 上的
-  `termux-dsh` 仍停在 `0.2.2-rc.1-tdsh.1`（旧于最后一个 Release），且未弃用。
+- **npm 渠道从未跑通**：CI 的 OIDC 自动发布四次尝试均失败（passkey 2FA / trusted publisher 未配成）；
+  公共 npm 上只有 2026-11-07 手工发的 `0.2.2-rc.1-tdsh.1`，**没有任何安装回归记录**，
+  包内仍是 rc.1 时代内容（含后来已删除的补丁），且未弃用（需登录 + 2FA）。
 - CI 缺一条 `dsh web --no-open --port 0` 的端口存活冒烟（此前出现过静默回归）。
 - 手机侧兼容软链 `~/code/dsh-termux-patches` 未纳入任何脚本（换机后需手工重建）。
 

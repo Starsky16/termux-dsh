@@ -57,12 +57,13 @@ chk "HMR 已禁用" bash -c 'dsh --profile web --dump-config 2>/dev/null | grep 
 
 echo
 echo "== 工作区接线（可选） =="
-if [[ -d "${CODE:-$HOME/code}/workflow-sync" ]]; then
-  # 数量以 workflow-sync 技能实体为准（project + market），避免技能增删后硬编码漂移。
-  chk "技能接线数量与实体一致" bash -c '[[ $(ls ~/.dsh/skills 2>/dev/null | wc -l) -eq $(find "$HOME/code/workflow-sync/skills" -mindepth 2 -maxdepth 2 -type d 2>/dev/null | wc -l) ]]'
-  chk "pre-commit 钩子" test -x "$HOME/code/workflow-sync/.git/hooks/pre-commit"
+WS="${WORKSPACE_DIR:-${CODE:-$HOME/code}/workspace}"
+if [[ -d "$WS" ]]; then
+  # 数量以工作区技能实体为准（project + market），避免技能增删后硬编码漂移。
+  chk "技能接线数量与实体一致" bash -c "[[ \$(ls ~/.dsh/skills 2>/dev/null | wc -l) -eq \$(find '$WS/skills' -mindepth 2 -maxdepth 2 -type d 2>/dev/null | wc -l) ]]"
+  chk "pre-commit 钩子" test -x "$WS/.git/hooks/pre-commit"
 else
-  skip "未安装 workflow-sync，跳过记忆/技能检查"
+  skip "未找到记忆工作区（用 WORKSPACE_DIR 指定），跳过记忆/技能检查"
 fi
 
 echo

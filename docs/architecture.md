@@ -43,7 +43,7 @@
 依赖 → 解析最新 tag（含 pre-release）→ 下载 + sha256
 → npm i -g --ignore-scripts → termux-fix-shebang
 → setup-env.sh → apply-overrides.sh
-→ workflow-sync 存在时 link-workspace.sh
+→ 记忆工作区存在时 link-workspace.sh
 → patches/apply.sh --check → verify.sh
 ```
 

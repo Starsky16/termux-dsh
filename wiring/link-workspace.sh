@@ -1,14 +1,19 @@
 #!/data/data/com.termux/files/usr/bin/bash
-# Wire a Termux workspace to workflow-sync:
+# Wire a Termux workspace to a private memory workspace:
 #   - each repo's two memory slots (AGENTS.md / AGENTS.local.md, ClassIsland exception)
 #   - ~/.dsh/AGENTS.md and ~/.dsh/skills/*
 #   - ~/bin helper commands and each repo's pre-commit hook
-#   - ~/code/dev/plans -> workflow-sync/plans
+#   - <code>/dev/plans -> <workspace>/plans
 #
 # The links are read-only pointers. Never edit through a link: resolve the real
-# path under workflow-sync first (see rules/global_rules.md).
+# path under the workspace first.
 #
-# Usage: link-workspace.sh [--dry-run]
+# The memory workspace is NOT part of this repository and its layout is
+# maintainer-specific. Point at it explicitly:
+#
+#   WORKSPACE_DIR=/path/to/workspace link-workspace.sh [--dry-run]
+#
+# If WORKSPACE_DIR is unset, $CODE/workspace is used as a convention.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/../lib/common.sh"
@@ -17,16 +22,14 @@ DRY=0
 [[ "${1:-}" == "--dry-run" ]] && DRY=1
 
 CODE="${CODE:-$HOME/code}"
-WS="$CODE/workflow-sync"
+WS="${WORKSPACE_DIR:-$CODE/workspace}"
 DSH="${DSH_HOME:-$HOME/.dsh}"
-KEY="-d-code--p2-231095bd5d06244ef5dc"
-MEM="$WS/memory/projects/$KEY"
-DIGEST="$MEM/global_digest.md"
+MEM="$WS/memory"
+DIGEST="$MEM/global/digest.md"
 
-[[ -d "$WS" ]] || die "缺 workflow-sync：$WS"
+[[ -d "$WS" ]] || die "缺记忆工作区：$WS（用 WORKSPACE_DIR 指定路径）"
 [[ -d "$MEM" ]] || die "缺记忆目录：$MEM"
 [[ -f "$DIGEST" ]] || die "缺全局摘要：$DIGEST"
-[[ -f "$WS/rules/global_rules.md" ]] || die "缺规则：$WS/rules/global_rules.md"
 
 lnk() {
   if [[ "$DRY" == "1" ]]; then
@@ -71,9 +74,9 @@ append_exclude() {
 mkdir_maybe "$DSH"
 mkdir_maybe "$DSH/skills"
 backup_if_regular "$DSH/AGENTS.md"
-lnk "$WS/rules/global_rules.md" "$DSH/AGENTS.md"
+lnk "$WS/rules/core.md" "$DSH/AGENTS.md"
 
-# Remove stale links that point into workflow-sync and no longer resolve.
+# Remove stale links that point into the workspace and no longer resolve.
 if [[ "$DRY" != "1" ]]; then
   for link in "$DSH"/skills/*; do
     [[ -L "$link" ]] || continue
@@ -92,7 +95,7 @@ for src in "$WS"/skills/project/* "$WS"/skills/market/*; do
   lnk "$src" "$DSH/skills/$name"
   skill_count=$((skill_count + 1))
 done
-info "技能链接：$skill_count 条（期望 22）"
+info "技能链接：$skill_count 条"
 
 # 2) each repo's two memory slots + pre-commit
 for d in "$CODE"/*/; do

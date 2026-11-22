@@ -5,7 +5,7 @@
 
 ## [归档] — 2026-11-21
 
-- **仓库归档（GitHub public archive，只读）**：唯一消费者 `iPA2575` 已将运行层从
+- **仓库归档（GitHub public archive，只读）**：唯一消费者已将运行层从
   Termux + `dsh-termux` 迁至 DSHBox（PRoot Debian + 上游 dsh），本仓无使用场景；
   上游基线停在 `0.2.2-rc.3`（rc.4 / rc.5 未跟进）。CI repack 随归档停跑。
 - 最后产物 `v0.2.2-rc.3-tdsh.2`（tarball + deb）保持可下载，老 Termux 环境仍可安装。
@@ -53,7 +53,7 @@
 - A 类 7 文件按 manifest 全量应用，哈希全匹配；B5、koffi×3、node-pty 锚点 dry-run 通过。
 - B10 在 rc.3 树上实测：`dsh --version` 输出 `0.2.2-rc.3-tdsh.1`。
 - CI：dry-run `43579331105` 与发布 `43579729022` 全绿（A1–A7、B5/B10、原生件、deb/tar 校验）。
-- 真机（vivo iPA2575 / Android 16）：deb 安装成功、`dsh --version` 正确、
+- 真机（vivo Android 16）：deb 安装成功、`dsh --version` 正确、
   `dsh-termux-verify` 全项 PASS、`dsh web --no-open --port 0` 冒烟启动正常。
 - 注意：rc.3 依赖膨胀，产物 tarball 261 MB / deb 108 MB（rc.1 为 133 MB / 42 MB），
   安装后运行时约 1.5 GB。
@@ -90,7 +90,7 @@
   B1–B5、B10 `patch --dry-run` 全通过；补丁后文件 `node --check` 通过。
 - CI：dry-run `42330686925` 与发布 `42330930342` 全绿；A1–A7、B5/B10、三个原生件
   `static libc++`、`verify-package.sh` / `verify-deb.sh` 全 PASS。
-- 真机（vivo iPA2575 / Android 16）：`dsh --version` = `0.2.2-rc.1-tdsh.1`；
+- 真机（vivo Android 16）：`dsh --version` = `0.2.2-rc.1-tdsh.1`；
   `dsh-termux-verify` 全项 PASS；`dsh web --no-open --port 0` 冒烟启动成功。
 - 已知：`dsh-compat` 的 L2 补丁锚点尚未适配 0.2.2 的 `dsh-client-modules/lib/client.js`
   （安装后 `postinst` 重打报 drift），属姊妹仓跟进项，不阻塞 dsh 本体。

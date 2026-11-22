@@ -74,11 +74,12 @@ bash "$HERE/profile/setup-selfcheck.sh"
 info "[5/8] profile 覆盖（sandbox/approval/HMR）"
 bash "$HERE/profile/apply-overrides.sh"
 
-info "[6/8] 接线（workflow-sync 存在时）"
-if [[ -d "${CODE:-$HOME/code}/workflow-sync" ]]; then
+info "[6/8] 接线（记忆工作区存在时）"
+WS="${WORKSPACE_DIR:-${CODE:-$HOME/code}/workspace}"
+if [[ -d "$WS" ]]; then
   bash "$HERE/wiring/link-workspace.sh"
 else
-  warn "未找到 ${CODE:-$HOME/code}/workflow-sync，跳过记忆/技能接线"
+  warn "未找到记忆工作区 $WS（用 WORKSPACE_DIR 指定），跳过记忆/技能接线"
 fi
 
 info "[7/8] profile 树补丁检查"

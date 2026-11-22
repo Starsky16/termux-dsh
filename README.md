@@ -1,6 +1,6 @@
 # termux-dsh
 
-> ⚠️ **已归档（2026-11-21，GitHub 只读）**：唯一的 Termux 使用者（`iPA2575`）已把运行层迁到
+> ⚠️ **已归档（2026-11-21，GitHub 只读）**：唯一的 Termux 使用者已把运行层迁到
 > **DSHBox（PRoot Debian + 上游 dsh）**，本仓停止维护。最后一个产物 `v0.2.2-rc.3-tdsh.2`
 > （tarball 与 deb）仍可正常下载，老 Termux 环境可照旧安装；上游基线停在 `0.2.2-rc.3`，
 > rc.4 / rc.5 未跟进。**归档时尚未完成的事项见文末「归档时未完成」**。
@@ -17,7 +17,7 @@
 ![Platform](https://img.shields.io/badge/platform-Termux%20arm64-informational)
 
 > **归档前状态（2026-11-14，历史）**：`v0.2.2-rc.3-tdsh.1` 已在 Termux 真机验证通过
-> （vivo iPA2575 / Android 16 / aarch64）：CI 构建全绿、`dsh-termux-verify` 全项 PASS、
+> （vivo Android 16 / aarch64）：CI 构建全绿、`dsh-termux-verify` 全项 PASS、
 > `dsh web` 冒烟启动正常。上游 `0.2.2-rc.3` 仍无稳定版，但本仓 `main` 的构建直接作为
 > 正式 Release（Latest）发布，版本号保留上游 `rc` 段。
 >
